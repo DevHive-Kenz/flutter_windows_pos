@@ -17,25 +17,19 @@ class PaymentTypeModelAdapter extends TypeAdapter<PaymentTypeModel> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return PaymentTypeModel(
-      order: fields[0] as String?,
-      cash: fields[1] as String?,
-      credit: fields[2] as String?,
-      card: fields[3] as String?,
+      amount: fields[1] as String?,
+      paymentMethod: fields[0] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, PaymentTypeModel obj) {
     writer
-      ..writeByte(4)
-      ..writeByte(0)
-      ..write(obj.order)
-      ..writeByte(1)
-      ..write(obj.cash)
       ..writeByte(2)
-      ..write(obj.credit)
-      ..writeByte(3)
-      ..write(obj.card);
+      ..writeByte(0)
+      ..write(obj.paymentMethod)
+      ..writeByte(1)
+      ..write(obj.amount);
   }
 
   @override
@@ -55,16 +49,12 @@ class PaymentTypeModelAdapter extends TypeAdapter<PaymentTypeModel> {
 
 PaymentTypeModel _$PaymentTypeModelFromJson(Map<String, dynamic> json) =>
     PaymentTypeModel(
-      order: json['order'] as String?,
-      cash: json['cash'] as String?,
-      credit: json['credit'] as String?,
-      card: json['card'] as String?,
+      amount: json['amount'] as String?,
+      paymentMethod: json['paymentMethod'] as String?,
     );
 
 Map<String, dynamic> _$PaymentTypeModelToJson(PaymentTypeModel instance) =>
     <String, dynamic>{
-      'order': instance.order,
-      'cash': instance.cash,
-      'credit': instance.credit,
-      'card': instance.card,
+      'paymentMethod': instance.paymentMethod,
+      'amount': instance.amount,
     };

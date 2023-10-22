@@ -20,6 +20,7 @@ class ProductListNotifier extends ChangeNotifier {
 
   final ProductListApi _productListApi = ProductListApi();
   bool _isLoading = false;
+  int? _idSelectedCategory ;
 
   ProductModel? _productData;
   List<ProductContentModel> _productDataList =[];
@@ -29,10 +30,12 @@ class ProductListNotifier extends ChangeNotifier {
   ProductModel? get getProductData => _productData;
   List<ProductContentModel>? get getProductListData => _productDataList;
 
+  int?get  getSelectedCategory => _idSelectedCategory ;
 
 
   void search({required int id, required bool accessAll}){
     _productDataList = [];
+    _idSelectedCategory = id;
     notifyListeners();
     print("sssssss");
     _productData?.result?.processedListProducts?.forEach((key, value) {

@@ -59,6 +59,7 @@ dependencies:
   customizable_counter: ^1.0.4
   printing: ^5.11.0
   qr_flutter: ^4.1.0
+  virtual_keyboard_multi_language: ^1.0.3
 
 dev_dependencies:
   flutter_test:
@@ -104,6 +105,9 @@ flutter:
     - family: Rubik
       fonts:
         - asset: asset/fonts/Rubik-VariableFont_wght.ttf
+    - family: Vazirmatn
+      fonts:
+        - asset: asset/fonts/Vazirmatn-SemiBold.ttf
   # fonts:
   #   - family: Schyler
   #     fonts:

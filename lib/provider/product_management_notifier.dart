@@ -32,7 +32,8 @@ class ProductManagementNotifier extends ChangeNotifier {
   bool _isParcel= false;
   Map<String,PaymentTypeModel> _paymentType ={};
   String? _paymentTypeString;
-
+List<PaymentTypeModel>? _multiModelList;
+List<PaymentTypeModel>? get getMultiModelList =>_multiModelList;
   List<ProductContentModel> _selectedProducts = [];
 
   CacheService cashService = CacheService();
@@ -179,21 +180,47 @@ class ProductManagementNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setPaymentType({required PaymentType type,required PaymentType method,required String price}){
-             String methodType = type == PaymentType.CARD ? "Card":type == PaymentType.CASH ? "Cash" :type == PaymentType.CREDIT ? "Credit" :"None";
-             String payType = type == PaymentType.CARD ? "Card":type == PaymentType.CASH ? "Cash" :type == PaymentType.CREDIT ? "Credit" :type == PaymentType.MULTI ?"Multi":type == PaymentType.EXPRESS ?"Express":"None";
-             _paymentType.update(payType, (value) => PaymentTypeModel(
-             order: methodType,
-             card: methodType == PaymentType.CARD ?price:"0.00",
-             cash: methodType == PaymentType.CASH ?price:"0.00",
-             credit: methodType == PaymentType.CREDIT ?price:"0.00"
-         ),ifAbsent: () => PaymentTypeModel(
-             order: methodType,
-             card: methodType == PaymentType.CARD ?price:"0.00",
-             cash: methodType == PaymentType.CASH ?price:"0.00",
-             credit: methodType == PaymentType.CREDIT ?price:"0.00"
-         ));
-           notifyListeners();
+  String? _cash;
+  String? _card;
+  String? _credit;
+
+  void setPaymentType({required bool clean,required PaymentType type,required String? cardPrice,required String? creditPrice,required String? cashPrice}){
+   if(clean){
+     _credit = "0";
+     _cash = "0";
+     _card = "0";
+     notifyListeners();
+   }
+
+    if(type == PaymentType.MULTI){
+      if(cashPrice != null && cashPrice.isNotEmpty){
+        _cash = cashPrice;
+      }else if (cardPrice != null && cardPrice.isNotEmpty){
+        _card = cardPrice;
+      }else if (creditPrice != null && creditPrice.isNotEmpty){
+        _credit = creditPrice;
+      }
+     _multiModelList =[
+       PaymentTypeModel(paymentMethod: "Card",amount:_card ),
+       PaymentTypeModel(paymentMethod: "Cash",amount:_cash ),
+       PaymentTypeModel(paymentMethod: "Credit",amount:_credit ),
+     ];
+     notifyListeners();
+    }
+         //     String methodType = type == PaymentType.CARD ? "Card":type == PaymentType.CASH ? "Cash" :type == PaymentType.CREDIT ? "Credit" :"None";
+         //     String payType = type == PaymentType.CARD ? "Card":type == PaymentType.CASH ? "Cash" :type == PaymentType.CREDIT ? "Credit" :type == PaymentType.MULTI ?"Multi":type == PaymentType.EXPRESS ?"Express":"None";
+         //     _paymentType.update(payType, (value) => PaymentTypeModel(
+         //     order: methodType,
+         //     card: methodType == PaymentType.CARD ?price:"0.00",
+         //     cash: methodType == PaymentType.CASH ?price:"0.00",
+         //     credit: methodType == PaymentType.CREDIT ?price:"0.00"
+         // ),ifAbsent: () => PaymentTypeModel(
+         //     order: methodType,
+         //     card: methodType == PaymentType.CARD ?price:"0.00",
+         //     cash: methodType == PaymentType.CASH ?price:"0.00",
+         //     credit: methodType == PaymentType.CREDIT ?price:"0.00"
+         // ));
+         //   notifyListeners();
 
   }
 
@@ -211,9 +238,18 @@ class ProductManagementNotifier extends ChangeNotifier {
   Future<void> setOrderID({required BuildContext context,required int orderId}) async {
     final dbFuncNotifier = context.read<DataBaseFunctionalities>();
     _orderNumber = orderId;
+    print("00000000000000000001");
+
     notifyListeners();
+    print("00000000000000000002");
+
     await dbFuncNotifier.saveDataBase(dbName: AppStrings.dbOrderID, dbData: _orderNumber);
+    print("00000000000000000003 $_orderNumber");
+
     await dbFuncNotifier.saveDataBase(dbName: AppStrings.dbInvoiceID, dbData: _invoiceNumber);
+   await retrieveOrderAndInvoiceID(context: context);
+    print("00000000000000000003 $_orderNumber");
+
   }
 
   Future<void> setOrderAndInvoiceID({required BuildContext context}) async {

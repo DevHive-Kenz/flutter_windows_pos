@@ -15,13 +15,18 @@ class SalesProductModel{
   @HiveField(6) final String? total_amount;
   @HiveField(7) final String? gross_total;
   @HiveField(8) final String? vat_amount;
-  @HiveField(9) final String? added;
-  @HiveField(10) final String? id;
-  SalesProductModel( {this.id,
+  @HiveField(9) final String? product_id;
+
+  SalesProductModel({this.product_id,
     this.name,
     this.name_arabic,
-    this.quantity, this.discount, this.discounted_price, this.discount_type, this.total_amount, this.gross_total, this.vat_amount, this.added,
-
+    this.quantity,
+    this.discount,
+    this.discounted_price,
+    this.discount_type,
+    this.total_amount,
+    this.gross_total,
+    this.vat_amount,
   });
   factory SalesProductModel.fromJson(Map<String, dynamic> json) => _$SalesProductModelFromJson(json);
 

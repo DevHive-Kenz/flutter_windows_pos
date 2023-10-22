@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kenz/constants/app_routes.dart';
 import 'package:provider/provider.dart';
 import '../../../../constants/constants.dart';
 import '../../../../provider/general_notifier.dart';
@@ -41,14 +42,21 @@ class CheckOutINIDNotifier extends ChangeNotifier {
         if(listData["status"] == 200 || listData["status"] == 201){
           _checkInId= (listData["result"] is int ) ? listData["result"]:0000000 ;
           await dbFuncNotifier.saveDataBase(dbName: AppStrings.dbCheckInID, dbData: _checkInId);
-
-          context.read<ProductManagementNotifier>().setOrderID(context: context, orderId: 1);
+         await context.read<ProductManagementNotifier>().setOrderID(context: context, orderId: 1);
           _isLoading = false;
           notifyListeners();
           return "OK";
         }else{
           _isLoading = false;
           notifyListeners();
+          Navigator.pushReplacementNamed(context, loginRoute);
+          showDialog(
+            context: context,
+            builder: (context) {
+              return           showAwesomeDialogue(content: "Please Try Again Later (401)",title: "Warning");
+
+            },
+          );
           showAwesomeDialogue(title: "Warning", content: "Please try again", );
         }
       }else{

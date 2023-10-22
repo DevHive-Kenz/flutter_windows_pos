@@ -11,6 +11,7 @@ import 'package:kenz/constants/font_manager.dart';
 import 'package:kenz/constants/values_manger.dart';
 import 'package:kenz/screens/widget/Circular_progress_indicator_widget.dart';
 import 'package:kenz/screens/widget/rounded_button_widget.dart';
+import 'package:virtual_keyboard_multi_language/virtual_keyboard_multi_language.dart';
 
 import '../../constants/constants.dart';
 import '../../constants/style_manager.dart';
@@ -41,11 +42,15 @@ class HomeScreen extends HookWidget {
         context.watch<ProductManagementNotifier>();
     final checkInOutNotifier = context.read<CheckInOutNotifier>();
     final categoryNotifier = context.read<CategoryNotifier>();
+    final productListNotifier = context.watch<ProductListNotifier>();
 
     final isLoading = useState<bool>(false);
+    final isKeyboardVisible = useState<bool>(false);
     final balance = useState<double>(0.00);
     ValueNotifier axisCount = useState<int>(5);
     ValueNotifier multiPayRows = useState<int>(1);
+    ValueNotifier indexOfMultiPayTouch = useState<int>(0);
+    ValueNotifier indexOfPrice = useState<int>(0);
     ValueNotifier isParcel = useState<bool>(false);
     ValueNotifier<List<String>> selectedPaymentType =
         useState<List<String>>([]);
@@ -74,10 +79,14 @@ class HomeScreen extends HookWidget {
 
     Future<void> printing({bool? isRecentTransaction =false, String? orderNo, String? invoiceNo}) async {
       isLoading.value = true;
+
       await context.read<InvoicePrintingNotifier>().printInvoice(context: context, isRecentTransaction: isRecentTransaction ?? false, orderID: orderNo ?? "",invoiceID: invoiceNo ?? "").then((value) {
+
         if (context.read<InvoicePrintingNotifier>().getIsDone) {
+
           isLoading.value = false;
         } else {
+
           isLoading.value = false;
           showDialog(
             context: context,
@@ -145,7 +154,6 @@ class HomeScreen extends HookWidget {
                                             itemCount: (snapshotCategory.getCategory?.result?.length ?? 0 ),
                                             itemBuilder: (context, index) {
                                               final dataCategory = snapshotCategory.getCategory?.result?[index];
-                                              print("ddddddd ${snapshotCategory.getCategory?.result?.length}");
                                               if (index == 0) {
                                                 return  InkWell(
                                                   onTap: (){
@@ -158,7 +166,16 @@ class HomeScreen extends HookWidget {
                                                     decoration: BoxDecoration(
                                                       borderRadius:
                                                       BorderRadius.circular(12),
+
                                                       color: ColorManager.white,
+                                                      gradient: LinearGradient(
+                                                        begin: Alignment.topLeft,
+                                                        end: Alignment.bottomRight,
+                                                        colors: [
+              productListNotifier.getSelectedCategory == null  || productListNotifier.getSelectedCategory == 0000000000  ?  ColorManager.primaryLight :Colors.white ,
+              productListNotifier.getSelectedCategory == null  || productListNotifier.getSelectedCategory == 0000000000  ? ColorManager.onPrimaryLight : Colors.white ,
+                                                        ],
+                                                      ),
                                                       boxShadow: const [
                                                         BoxShadow(
                                                           color: Colors.grey,
@@ -203,8 +220,8 @@ class HomeScreen extends HookWidget {
                                                             child: Text(
                                                               "All",
                                                               style: getSemiBoldStyle(
-                                                                  color: ColorManager
-                                                                      .primaryLight,
+                                                                  color:  productListNotifier.getSelectedCategory == null  || productListNotifier.getSelectedCategory == 0000000000? ColorManager.white : ColorManager.primaryLight ,
+
                                                                   fontSize: FontSize.s16),
                                                             ),
                                                           )
@@ -216,7 +233,7 @@ class HomeScreen extends HookWidget {
                                               }
                                               return InkWell(
                                                 onTap: (){
-                                                  context.read<ProductListNotifier>().search(id: dataCategory?.id ?? 9999, accessAll: false);
+                                                  productListNotifier.search(id: dataCategory?.id ?? 9999, accessAll: false);
                                                 },
                                                 child: Container(
                                                   margin: const EdgeInsets.symmetric(
@@ -225,6 +242,14 @@ class HomeScreen extends HookWidget {
                                                   decoration: BoxDecoration(
                                                     borderRadius:
                                                         BorderRadius.circular(12),
+                                                    gradient: LinearGradient(
+                                                      begin: Alignment.topLeft,
+                                                      end: Alignment.bottomRight,
+                                                      colors: [
+                                                        productListNotifier.getSelectedCategory == dataCategory?.id  ?  ColorManager.primaryLight :Colors.white ,
+                                                        productListNotifier.getSelectedCategory == dataCategory?.id  ? ColorManager.onPrimaryLight : Colors.white ,
+                                                      ],
+                                                    ),
                                                     color: ColorManager.white,
                                                     boxShadow: const [
                                                       BoxShadow(
@@ -270,8 +295,8 @@ class HomeScreen extends HookWidget {
                                                           child: Text(
                                                             dataCategory?.name ?? "",
                                                             style: getSemiBoldStyle(
-                                                                color: ColorManager
-                                                                    .primaryLight,
+                                                              color:  productListNotifier.getSelectedCategory == dataCategory?.id  ? ColorManager.white : ColorManager.primaryLight ,
+
                                                                 fontSize: FontSize.s16),
                                                           ),
                                                         )
@@ -447,7 +472,7 @@ class HomeScreen extends HookWidget {
                                         ),
                                         kSizedBox10,
                                         Row(
-                                          // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          // mainAxisAlignment: MainAxisAlignment.center,
                                           children: [
                                             // Expanded(
                                             //     child: QuickMenuWidget(
@@ -481,22 +506,168 @@ class HomeScreen extends HookWidget {
                                             //   onTap: () {},
                                             // )),
                                             // // kSizedW10,
-                                            Expanded(
-                                                child: QuickMenuWidget(
-                                              icon: Icons.request_page,
-                                                  isSelected: true,
-
-                                                  height: 50,
-                                              width: 50,
-                                              onTap: () {},
-                                            )),
+                                            // Expanded(
+                                            //     child: QuickMenuWidget(
+                                            //   icon: Icons.request_page,
+                                            //       isSelected: true,
+                                            //
+                                            //       height: 50,
+                                            //   width: 50,
+                                            //   onTap: () {},
+                                            // )),
                                             // kSizedW10,
-                                            Expanded(
-                                                child: QuickMenuWidget(
+                                            QuickMenuWidget(
                                               icon: Icons.description_rounded,
-                                                  isSelected: true,
+                                              isSelected: true,
+                                              height: 50,
+                                              width: 50,
+                                              onTap: () {
+                                            showDialog(
+                                              context: context,
+                                              builder: (context) {
+                                                return StatefulBuilder(
+                                                    builder: (context,stateSetterSetModalState) {
+                                                  return Dialog(
+                                                    shape: RoundedRectangleBorder(
+                                                      borderRadius: BorderRadius.circular(12.0),
+                                                    ),
+                                                    child: Container(
+                                                      height: 600.h,
+                                                      padding: EdgeInsets.all(AppPadding.p22),
+                                                      decoration: BoxDecoration(
+                                                        borderRadius: BorderRadius.circular(12),
+                                                        color: ColorManager.white,
+                                                      ),
+                                                      child: Column(
+                                                        mainAxisSize:
+                                                            MainAxisSize
+                                                                .min,
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Row(
+                                                            children: [
+                                                              Icon(
+                                                                  Icons
+                                                                      .description_rounded,
+                                                                  color: ColorManager
+                                                                      .primaryLight),
+                                                              kSizedW2,
+                                                              Text(
+                                                                "Draft List",
+                                                                style: getBoldStyle(
+                                                                    color: ColorManager
+                                                                        .primaryLight,
+                                                                    fontSize:
+                                                                        AppSize.s18),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                          kSizedBox10,
+                                                          Text(
+                                                            "Select a Draft To Covert into Sale",
+                                                            style: getSemiBoldStyle(
+                                                                color: ColorManager
+                                                                    .black,
+                                                                fontSize:
+                                                                    AppSize
+                                                                        .s16),
+                                                          ),
+                                                          kSizedBox5,
+                                                          SizedBox(
+                                                            height: 450.h,
+                                                            child: Consumer<
+                                                                    DraftNotifier>(
+                                                                builder:
+                                                                    (context,
+                                                                        snapshotDraft,
+                                                                        _) {
+                                                              return GridView
+                                                                  .count(
+                                                                      crossAxisCount: axisCount.value +
+                                                                          2,
+                                                                      crossAxisSpacing:
+                                                                          10,
+                                                                      mainAxisSpacing:
+                                                                          10,
+                                                                      children: List.generate(
+                                                                          snapshotDraft.getDraftSales?.length ?? 0,
+                                                                          (index) {
+                                                                        PosSalesModel draftData =snapshotDraft.getDraftSales?[index] ?? [];
 
-                                                  height: 50,
+                                                                        return InkWell(
+                                                                          onTap: () {
+                                                                            productManagementNotifier.cleanAfterSale();
+
+                                                                            draftData.items?.forEach((element) {
+                                                                              ProductContentModel product = ProductContentModel(
+                                                                                  price: double.parse(element.gross_total ?? "0.00") + double.parse(element.vat_amount ?? "0.00"),
+                                                                                  total: double.parse(element.total_amount ?? "0.00"),
+                                                                                  name: element.name, name_arabic: element.name_arabic,
+                                                                                  vat: double.parse(element.vat_amount ?? "0.00"),
+                                                                                  user_id: draftData.user_id,
+                                                                                  priceWithoutVat: double.parse(element.gross_total ?? "0.00"),
+                                                                                  added: null, discounted_price: null, discount_type: null, discount: null,
+                                                                                  qty: int.parse(element.quantity ?? "0"),
+                                                                                  category_id: null, id: int.parse(element.product_id ?? "0"));
+                                                                              productManagementNotifier.productSummaryManagement(
+                                                                                  product:product,
+                                                                                  isDelete: false,
+                                                                                  context: context,
+                                                                                  isDraftConverting: true);
+                                                                            });
+                                                                            Navigator.pop(context);
+                                                                          },
+                                                                          child: Container(
+                                                                            margin: EdgeInsets.symmetric(horizontal: AppPadding.p8, vertical: AppPadding.p6),
+                                                                            padding: EdgeInsets.symmetric(horizontal: AppPadding.p8, vertical: AppPadding.p6),
+                                                                            decoration: BoxDecoration(
+                                                                              borderRadius: BorderRadius.circular(12.r),
+                                                                              color: ColorManager.white,
+                                                                              boxShadow: const [
+                                                                                BoxShadow(
+                                                                                  color: Colors.grey,
+                                                                                  offset: Offset(0.0, 1.0),
+                                                                                  blurRadius: 6.0,
+                                                                                ),
+                                                                              ],
+                                                                            ),
+                                                                            child: Center(
+                                                                              child: Column(
+                                                                                mainAxisSize: MainAxisSize.min,
+                                                                                mainAxisAlignment: MainAxisAlignment.center,
+                                                                                children: [
+                                                                                  Text(draftData.invoice_id!, textAlign: TextAlign.center, style: getBoldStyle(color: ColorManager.primaryLight, fontSize: FontSize.s12)),
+                                                                                  kSizedBox2,
+                                                                                  Text(dateFormatter.format(DateTime.parse(draftData.created!)), textAlign: TextAlign.center, style: getBoldStyle(color: ColorManager.primaryLight, fontSize: FontSize.s12)),
+                                                                                  kSizedBox2,
+                                                                                  Text(draftData.customerName ?? "", textAlign: TextAlign.center, style: getBoldStyle(color: ColorManager.primaryLight, fontSize: FontSize.s12)),
+                                                                                  kSizedBox2,
+                                                                                  Text("Total Items: ${draftData.items?.length ?? "0"} ", textAlign: TextAlign.center, style: getBoldStyle(color: ColorManager.primaryLight, fontSize: FontSize.s12)),
+                                                                                  kSizedBox10,
+                                                                                  Text("Total: ${draftData.total ?? "0"} ${context.read<SetupSettingsNotifier>().getCurrency.toString()}", textAlign: TextAlign.center, style: getBoldStyle(color: ColorManager.primaryLight, fontSize: FontSize.s12)),
+                                                                                ],
+                                                                              ),
+                                                                            ),
+                                                                          ),
+                                                                        );
+                                                                      }));
+                                                            }),
+                                                          )
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  );
+                                                });
+                                              },
+                                            );
+                                              },
+                                            ),
+                                            QuickMenuWidget(
+                                              icon: Icons.receipt_long_rounded,
+                                              isSelected: true,
+                                              height: 50,
                                               width: 50,
                                               onTap: () {
                                                 showDialog(
@@ -504,283 +675,133 @@ class HomeScreen extends HookWidget {
                                                   builder: (context) {
                                                     return StatefulBuilder(
                                                         builder: (context,stateSetterSetModalState) {
-                                                      return Dialog(
-                                                        shape: RoundedRectangleBorder(
-                                                          borderRadius: BorderRadius.circular(12.0),
-                                                        ),
-                                                        child: Container(
-                                                          height: 600.h,
-                                                          padding: EdgeInsets.all(AppPadding.p22),
-                                                          decoration: BoxDecoration(
-                                                            borderRadius: BorderRadius.circular(12),
-                                                            color: ColorManager.white,
-                                                          ),
-                                                          child: Column(
-                                                            mainAxisSize:
+                                                          return Dialog(
+                                                            shape: RoundedRectangleBorder(
+                                                              borderRadius: BorderRadius.circular(12.0),
+                                                            ),
+                                                            child: Container(
+                                                              height: 600.h,
+                                                              padding: EdgeInsets.all(AppPadding.p22),
+                                                              decoration: BoxDecoration(
+                                                                borderRadius: BorderRadius.circular(12),
+                                                                color: ColorManager.white,
+                                                              ),
+                                                              child: Column(
+                                                                mainAxisSize:
                                                                 MainAxisSize
                                                                     .min,
-                                                            crossAxisAlignment:
+                                                                crossAxisAlignment:
                                                                 CrossAxisAlignment
                                                                     .start,
-                                                            children: [
-                                                              Row(
                                                                 children: [
-                                                                  Icon(
-                                                                      Icons
-                                                                          .description_rounded,
-                                                                      color: ColorManager
-                                                                          .primaryLight),
-                                                                  kSizedW2,
-                                                                  Text(
-                                                                    "Draft List",
-                                                                    style: getBoldStyle(
-                                                                        color: ColorManager
-                                                                            .primaryLight,
-                                                                        fontSize:
+                                                                  Row(
+                                                                    children: [
+                                                                      Icon(
+                                                                          Icons
+                                                                              .description_rounded,
+                                                                          color: ColorManager
+                                                                              .primaryLight),
+                                                                      kSizedW2,
+                                                                      Text(
+                                                                        "Recent Sales List",
+                                                                        style: getBoldStyle(
+                                                                            color: ColorManager
+                                                                                .primaryLight,
+                                                                            fontSize:
                                                                             AppSize.s18),
+                                                                      ),
+                                                                    ],
                                                                   ),
-                                                                ],
-                                                              ),
-                                                              kSizedBox10,
-                                                              Text(
-                                                                "Select a Draft To Covert into Sale",
-                                                                style: getSemiBoldStyle(
-                                                                    color: ColorManager
-                                                                        .black,
-                                                                    fontSize:
+                                                                  kSizedBox10,
+                                                                  Text(
+                                                                    "Select a Sale To print",
+                                                                    style: getSemiBoldStyle(
+                                                                        color: ColorManager
+                                                                            .black,
+                                                                        fontSize:
                                                                         AppSize
                                                                             .s16),
+                                                                  ),
+                                                                  kSizedBox5,
+                                                                  SizedBox(
+                                                                    height: 450.h,
+                                                                    child: Consumer<PosSaleNotifier>(
+                                                                        builder: (context, snapshotRecent, _) {
+                                                                          return GridView.count(crossAxisCount: axisCount.value + 2,
+                                                                              crossAxisSpacing: 10,
+                                                                              mainAxisSpacing: 10,
+                                                                              children: List.generate(
+                                                                                  (snapshotRecent.getRecentSales?.length ?? 0) >= 10 ? 10 :(snapshotRecent.getRecentSales?.length ?? 0), (index) {
+                                                                                    PosSalesModel? recentData = snapshotRecent.getRecentSales?.reversed.toList()[index] ;
+                                                                                    return InkWell(
+                                                                                      onTap: () async {
+                                                                                        productManagementNotifier.cleanAfterSale();
+                                                                                        recentData?.items?.forEach((element) {
+                                                                                          ProductContentModel product = ProductContentModel(
+                                                                                              price: double.parse(element.gross_total ?? "0.00") + double.parse(element.vat_amount ?? "0.00"),
+                                                                                              total: double.parse(element.total_amount ?? "0.00"),
+                                                                                              name: element.name, name_arabic: element.name_arabic,
+                                                                                              vat: double.parse(element.vat_amount ?? "0.00"),
+                                                                                              user_id: recentData.user_id,
+                                                                                              priceWithoutVat: double.parse(element.gross_total ?? "0.00"),
+                                                                                              added: null, discounted_price: null, discount_type: null, discount: null,
+                                                                                              qty: int.parse(element.quantity ?? "0"),
+                                                                                              category_id: null, id: int.parse(element.product_id ?? "0"));
+                                                                                          productManagementNotifier.productSummaryManagement(
+                                                                                              product:product,
+                                                                                              isDelete: false,
+                                                                                              context: context,
+                                                                                              isDraftConverting: true);
+                                                                                        });
+                                                                                        Navigator.pop(context);
+                                                                                        await printing(isRecentTransaction: true,orderNo: recentData?.order_id ?? "",invoiceNo: recentData?.invoice_id ??"");
+
+                                                                                      },
+                                                                                      child: Container(
+                                                                                        margin: EdgeInsets.symmetric(horizontal: AppPadding.p8, vertical: AppPadding.p6),
+                                                                                        padding: EdgeInsets.symmetric(horizontal: AppPadding.p8, vertical: AppPadding.p6),
+                                                                                        decoration: BoxDecoration(
+                                                                                          borderRadius: BorderRadius.circular(12.r),
+                                                                                          color: ColorManager.white,
+                                                                                          boxShadow: const [
+                                                                                            BoxShadow(
+                                                                                              color: Colors.grey,
+                                                                                              offset: Offset(0.0, 1.0),
+                                                                                              blurRadius: 6.0,
+                                                                                            ),
+                                                                                          ],
+                                                                                        ),
+                                                                                        child: Center(
+                                                                                          child: Column(
+                                                                                            mainAxisSize: MainAxisSize.min,
+                                                                                            mainAxisAlignment: MainAxisAlignment.center,
+                                                                                            children: [
+                                                                                              Text(recentData?.invoice_id ?? "", textAlign: TextAlign.center, style: getBoldStyle(color: ColorManager.primaryLight, fontSize: FontSize.s12)),
+                                                                                              kSizedBox2,
+                                                                                              Text(dateFormatter.format(DateTime.parse(recentData?.created ?? DateTime.now().toString())), textAlign: TextAlign.center, style: getBoldStyle(color: ColorManager.primaryLight, fontSize: FontSize.s12)),
+                                                                                              kSizedBox2,
+                                                                                              Text(recentData?.customerName ?? "", textAlign: TextAlign.center, style: getBoldStyle(color: ColorManager.primaryLight, fontSize: FontSize.s12)),
+                                                                                              kSizedBox2,
+                                                                                              Text("Total Items: ${recentData?.items?.length ?? "0"} ", textAlign: TextAlign.center, style: getBoldStyle(color: ColorManager.primaryLight, fontSize: FontSize.s12)),
+                                                                                              kSizedBox10,
+                                                                                              Text("Total: ${(recentData?.total ?? "0")} ${context.read<SetupSettingsNotifier>().getCurrency.toString()}", textAlign: TextAlign.center, style: getBoldStyle(color: ColorManager.primaryLight, fontSize: FontSize.s12)),
+                                                                                            ],
+                                                                                          ),
+                                                                                        ),
+                                                                                      ),
+                                                                                    );
+                                                                                  }));
+                                                                        }),
+                                                                  )
+                                                                ],
                                                               ),
-                                                              kSizedBox5,
-                                                              SizedBox(
-                                                                height: 450.h,
-                                                                child: Consumer<
-                                                                        DraftNotifier>(
-                                                                    builder:
-                                                                        (context,
-                                                                            snapshotDraft,
-                                                                            _) {
-                                                                  return GridView
-                                                                      .count(
-                                                                          crossAxisCount: axisCount.value +
-                                                                              2,
-                                                                          crossAxisSpacing:
-                                                                              10,
-                                                                          mainAxisSpacing:
-                                                                              10,
-                                                                          children: List.generate(
-                                                                              snapshotDraft.getDraftSales?.length ?? 0,
-                                                                              (index) {
-                                                                            PosSalesModel draftData =snapshotDraft.getDraftSales?[index] ?? [];
-
-                                                                            return InkWell(
-                                                                              onTap: () {
-                                                                                productManagementNotifier.cleanAfterSale();
-
-                                                                                draftData.items?.forEach((element) {
-                                                                                  ProductContentModel product = ProductContentModel(
-                                                                                      price: double.parse(element.gross_total ?? "0.00") + double.parse(element.vat_amount ?? "0.00"),
-                                                                                      total: double.parse(element.total_amount ?? "0.00"),
-                                                                                      name: element.name, name_arabic: element.name_arabic,
-                                                                                      vat: double.parse(element.vat_amount ?? "0.00"),
-                                                                                      user_id: draftData.user_id,
-                                                                                      priceWithoutVat: double.parse(element.gross_total ?? "0.00"),
-                                                                                      added: null, discounted_price: null, discount_type: null, discount: null,
-                                                                                      qty: int.parse(element.quantity ?? "0"),
-                                                                                      category_id: null, id: int.parse(element.id ?? "0"));
-                                                                                  productManagementNotifier.productSummaryManagement(
-                                                                                      product:product,
-                                                                                      isDelete: false,
-                                                                                      context: context,
-                                                                                      isDraftConverting: true);
-                                                                                });
-                                                                                Navigator.pop(context);
-                                                                              },
-                                                                              child: Container(
-                                                                                margin: EdgeInsets.symmetric(horizontal: AppPadding.p8, vertical: AppPadding.p6),
-                                                                                padding: EdgeInsets.symmetric(horizontal: AppPadding.p8, vertical: AppPadding.p6),
-                                                                                decoration: BoxDecoration(
-                                                                                  borderRadius: BorderRadius.circular(12.r),
-                                                                                  color: ColorManager.white,
-                                                                                  boxShadow: const [
-                                                                                    BoxShadow(
-                                                                                      color: Colors.grey,
-                                                                                      offset: Offset(0.0, 1.0),
-                                                                                      blurRadius: 6.0,
-                                                                                    ),
-                                                                                  ],
-                                                                                ),
-                                                                                child: Center(
-                                                                                  child: Column(
-                                                                                    mainAxisSize: MainAxisSize.min,
-                                                                                    mainAxisAlignment: MainAxisAlignment.center,
-                                                                                    children: [
-                                                                                      Text(draftData.invoice_id!, textAlign: TextAlign.center, style: getBoldStyle(color: ColorManager.primaryLight, fontSize: FontSize.s12)),
-                                                                                      kSizedBox2,
-                                                                                      Text(dateFormatter.format(DateTime.parse(draftData.created!)), textAlign: TextAlign.center, style: getBoldStyle(color: ColorManager.primaryLight, fontSize: FontSize.s12)),
-                                                                                      kSizedBox2,
-                                                                                      Text(draftData.customerName ?? "", textAlign: TextAlign.center, style: getBoldStyle(color: ColorManager.primaryLight, fontSize: FontSize.s12)),
-                                                                                      kSizedBox2,
-                                                                                      Text("Total Items: ${draftData.items?.length ?? "0"} ", textAlign: TextAlign.center, style: getBoldStyle(color: ColorManager.primaryLight, fontSize: FontSize.s12)),
-                                                                                      kSizedBox10,
-                                                                                      Text("Total: ${draftData.total ?? "0"} ${context.read<SetupSettingsNotifier>().getCurrency.toString()}", textAlign: TextAlign.center, style: getBoldStyle(color: ColorManager.primaryLight, fontSize: FontSize.s12)),
-                                                                                    ],
-                                                                                  ),
-                                                                                ),
-                                                                              ),
-                                                                            );
-                                                                          }));
-                                                                }),
-                                                              )
-                                                            ],
-                                                          ),
-                                                        ),
-                                                      );
-                                                    });
+                                                            ),
+                                                          );
+                                                        });
                                                   },
                                                 );
                                               },
-                                            )),
-                                            Expanded(
-                                                child: QuickMenuWidget(
-                                              icon: Icons.receipt_long_rounded,
-                                                  isSelected: true,
-
-                                                  height: 50,
-                                              width: 50,
-                                                  onTap: () {
-                                                    showDialog(
-                                                      context: context,
-                                                      builder: (context) {
-                                                        return StatefulBuilder(
-                                                            builder: (context,stateSetterSetModalState) {
-                                                              return Dialog(
-                                                                shape: RoundedRectangleBorder(
-                                                                  borderRadius: BorderRadius.circular(12.0),
-                                                                ),
-                                                                child: Container(
-                                                                  height: 600.h,
-                                                                  padding: EdgeInsets.all(AppPadding.p22),
-                                                                  decoration: BoxDecoration(
-                                                                    borderRadius: BorderRadius.circular(12),
-                                                                    color: ColorManager.white,
-                                                                  ),
-                                                                  child: Column(
-                                                                    mainAxisSize:
-                                                                    MainAxisSize
-                                                                        .min,
-                                                                    crossAxisAlignment:
-                                                                    CrossAxisAlignment
-                                                                        .start,
-                                                                    children: [
-                                                                      Row(
-                                                                        children: [
-                                                                          Icon(
-                                                                              Icons
-                                                                                  .description_rounded,
-                                                                              color: ColorManager
-                                                                                  .primaryLight),
-                                                                          kSizedW2,
-                                                                          Text(
-                                                                            "Recent Sales List",
-                                                                            style: getBoldStyle(
-                                                                                color: ColorManager
-                                                                                    .primaryLight,
-                                                                                fontSize:
-                                                                                AppSize.s18),
-                                                                          ),
-                                                                        ],
-                                                                      ),
-                                                                      kSizedBox10,
-                                                                      Text(
-                                                                        "Select a Sale To print",
-                                                                        style: getSemiBoldStyle(
-                                                                            color: ColorManager
-                                                                                .black,
-                                                                            fontSize:
-                                                                            AppSize
-                                                                                .s16),
-                                                                      ),
-                                                                      kSizedBox5,
-                                                                      SizedBox(
-                                                                        height: 450.h,
-                                                                        child: Consumer<PosSaleNotifier>(
-                                                                            builder: (context, snapshotRecent, _) {
-                                                                              return GridView.count(crossAxisCount: axisCount.value + 2,
-                                                                                  crossAxisSpacing: 10,
-                                                                                  mainAxisSpacing: 10,
-                                                                                  children: List.generate(
-                                                                                      (snapshotRecent.getRecentSales?.length ?? 0) >= 10 ? 10 :(snapshotRecent.getRecentSales?.length ?? 0), (index) {
-                                                                                        PosSalesModel? recentData = snapshotRecent.getRecentSales?.reversed.toList()[index] ;
-                                                                                        return InkWell(
-                                                                                          onTap: () async {
-                                                                                            productManagementNotifier.cleanAfterSale();
-                                                                                            recentData?.items?.forEach((element) {
-                                                                                              ProductContentModel product = ProductContentModel(
-                                                                                                  price: double.parse(element.gross_total ?? "0.00") + double.parse(element.vat_amount ?? "0.00"),
-                                                                                                  total: double.parse(element.total_amount ?? "0.00"),
-                                                                                                  name: element.name, name_arabic: element.name_arabic,
-                                                                                                  vat: double.parse(element.vat_amount ?? "0.00"),
-                                                                                                  user_id: recentData.user_id,
-                                                                                                  priceWithoutVat: double.parse(element.gross_total ?? "0.00"),
-                                                                                                  added: null, discounted_price: null, discount_type: null, discount: null,
-                                                                                                  qty: int.parse(element.quantity ?? "0"),
-                                                                                                  category_id: null, id: int.parse(element.id ?? "0"));
-                                                                                              productManagementNotifier.productSummaryManagement(
-                                                                                                  product:product,
-                                                                                                  isDelete: false,
-                                                                                                  context: context,
-                                                                                                  isDraftConverting: true);
-                                                                                            });
-                                                                                            Navigator.pop(context);
-                                                                                            await printing(isRecentTransaction: true,orderNo: recentData?.order_id ?? "",invoiceNo: recentData?.invoice_id ??"");
-
-                                                                                          },
-                                                                                          child: Container(
-                                                                                            margin: EdgeInsets.symmetric(horizontal: AppPadding.p8, vertical: AppPadding.p6),
-                                                                                            padding: EdgeInsets.symmetric(horizontal: AppPadding.p8, vertical: AppPadding.p6),
-                                                                                            decoration: BoxDecoration(
-                                                                                              borderRadius: BorderRadius.circular(12.r),
-                                                                                              color: ColorManager.white,
-                                                                                              boxShadow: const [
-                                                                                                BoxShadow(
-                                                                                                  color: Colors.grey,
-                                                                                                  offset: Offset(0.0, 1.0),
-                                                                                                  blurRadius: 6.0,
-                                                                                                ),
-                                                                                              ],
-                                                                                            ),
-                                                                                            child: Center(
-                                                                                              child: Column(
-                                                                                                mainAxisSize: MainAxisSize.min,
-                                                                                                mainAxisAlignment: MainAxisAlignment.center,
-                                                                                                children: [
-                                                                                                  Text(recentData?.invoice_id ?? "", textAlign: TextAlign.center, style: getBoldStyle(color: ColorManager.primaryLight, fontSize: FontSize.s12)),
-                                                                                                  kSizedBox2,
-                                                                                                  Text(dateFormatter.format(DateTime.parse(recentData?.created ?? DateTime.now().toString())), textAlign: TextAlign.center, style: getBoldStyle(color: ColorManager.primaryLight, fontSize: FontSize.s12)),
-                                                                                                  kSizedBox2,
-                                                                                                  Text(recentData?.customerName ?? "", textAlign: TextAlign.center, style: getBoldStyle(color: ColorManager.primaryLight, fontSize: FontSize.s12)),
-                                                                                                  kSizedBox2,
-                                                                                                  Text("Total Items: ${recentData?.items?.length ?? "0"} ", textAlign: TextAlign.center, style: getBoldStyle(color: ColorManager.primaryLight, fontSize: FontSize.s12)),
-                                                                                                  kSizedBox10,
-                                                                                                  Text("Total: ${(recentData?.total ?? "0")} ${context.read<SetupSettingsNotifier>().getCurrency.toString()}", textAlign: TextAlign.center, style: getBoldStyle(color: ColorManager.primaryLight, fontSize: FontSize.s12)),
-                                                                                                ],
-                                                                                              ),
-                                                                                            ),
-                                                                                          ),
-                                                                                        );
-                                                                                      }));
-                                                                            }),
-                                                                      )
-                                                                    ],
-                                                                  ),
-                                                                ),
-                                                              );
-                                                            });
-                                                      },
-                                                    );
-                                                  },
-                                            ))
+                                            )
                                           ],
                                         )
                                       ],
@@ -878,7 +899,7 @@ class HomeScreen extends HookWidget {
                                               ),
                                             ),
                                             Text(
-                                              "Invoice No:${"${(snapshot.getInvoicePrefix)} ${formatString(snapshot.getInvoiceNo.toString())}"} || Order No:${snapshot.getInvoiceNo}",
+                                              "Invoice No:${"${(snapshot.getInvoicePrefix)} ${formatString(snapshot.getInvoiceNo.toString())}"} || Order No:${snapshot.getOrderNo}",
                                               style: getBoldStyle(
                                                 color:
                                                     ColorManager.primaryLight,
@@ -1041,7 +1062,7 @@ class HomeScreen extends HookWidget {
                                                                 }
                                                               }
                                                             }),
-                                                            child: TextField(
+                                                            child: TextFormField(
                                                               controller: qtyControllers.value[index],
                                                               // autofocus: true,
                                                               onChanged: (value) {
@@ -1049,7 +1070,10 @@ class HomeScreen extends HookWidget {
                                                                   snapshot.editProductFromSummary(snapshot.getSelectedIndices[index], value);
                                                                 }
                                                               },
-
+                                                              onTap:() {
+                                                                isKeyboardVisible.value = true;
+                                                                indexOfPrice.value = index;
+                                                              },
                                                               decoration: InputDecoration(
                                                                 border: InputBorder.none,
                                                                 fillColor: ColorManager.filledColor,
@@ -1258,6 +1282,7 @@ class HomeScreen extends HookWidget {
                                   onTap: () {
                                     if (snapshot
                                         .getSelectedIndices.isNotEmpty) {
+                                      // showKeyboard();
                                       snapshot.setPaymentTypeString("Cash");
 
                                       cashController.clear();
@@ -1338,22 +1363,12 @@ class HomeScreen extends HookWidget {
                                                               .digitsOnly,
                                                         ],
                                                         onChanged: (value) {
-                                                          if (value
-                                                              .isNotEmpty) {
+                                                          if (value.isNotEmpty) {
                                                             stateSetterSetModalState(
                                                                 () {
-                                                              balance
-                                                                  .value = double
-                                                                      .parse(
-                                                                          value) -
-                                                                  snapshot
-                                                                      .getTotal;
-                                                              snapshot.setCashAndBalance(
-                                                                  cash: double.parse(
-                                                                      cashController
-                                                                          .text),
-                                                                  balance: balance
-                                                                      .value);
+                                                              balance.value = double.parse(value) - snapshot.getTotal;snapshot.setCashAndBalance(
+                                                                  cash: double.parse(cashController.text),
+                                                                  balance: balance.value);
                                                             });
                                                           } else {
                                                             showSnackBar(
@@ -1390,13 +1405,10 @@ class HomeScreen extends HookWidget {
                                                                 if (!balance
                                                                     .value
                                                                     .isNegative) {
-                                                                  snapshot.setPaymentType(
-                                                                      type: PaymentType
-                                                                          .CASH,
-                                                                      method: PaymentType
-                                                                          .CASH,
-                                                                      price: cashController
-                                                                          .text);
+                                                                  // snapshot.setPaymentType(
+                                                                  //     type: PaymentType.CASH,
+                                                                  //     method: PaymentType.CASH,
+                                                                  //     price: cashController.text);
                                                                   await printing();
                                                                 } else {
                                                                   showDialog(
@@ -1418,7 +1430,42 @@ class HomeScreen extends HookWidget {
                                                             width: 35.w,
                                                           ),
                                                         ),
-                                                      )
+                                                      ),
+                                                      kSizedBox20,
+                                                      Padding(
+                                                        padding: const EdgeInsets.all(12.0),
+                                                        child: Container(
+                                                          // Keyboard is transparent
+                                                          decoration: BoxDecoration(
+                                                              color: ColorManager.primaryLight,
+
+                                                              borderRadius: BorderRadius.circular(12)
+                                                          ),
+                                                          child: VirtualKeyboard(
+                                                            // [0-9] + .
+                                                              type: VirtualKeyboardType.Numeric,
+                                                              textColor: Colors.white,
+                                                              textController: cashController,
+                                                              // Callback for key press event
+                                                              onKeyPress: (key) {
+                                                                if (cashController.text.isNotEmpty) {
+                                                                  stateSetterSetModalState(
+                                                                          () {
+                                                                        balance.value = double.parse(cashController.text) - snapshot.getTotal;
+                                                                        snapshot.setCashAndBalance(
+                                                                            cash: double.parse(cashController.text),
+                                                                            balance: balance.value);
+                                                                      });
+                                                                } else {
+                                                                  showSnackBar(
+                                                                      context:
+                                                                      context,
+                                                                      text:
+                                                                      "Please enter a value");
+                                                                }
+                                                              }),
+                                                        ),
+                                                      ),
                                                     ],
                                                   ),
                                                 ),
@@ -1453,10 +1500,10 @@ class HomeScreen extends HookWidget {
                                       snapshot.setPaymentTypeString("Card");
 
                                       isLoading.value = true;
-                                      snapshot.setPaymentType(
-                                          type: PaymentType.CARD,
-                                          method: PaymentType.CARD,
-                                          price: snapshot.getTotal.toString());
+                                      // snapshot.setPaymentType(
+                                      //     type: PaymentType.CARD,
+                                      //     method: PaymentType.CARD,
+                                      //     price: snapshot.getTotal.toString());
                                       await printing();
                                       isLoading.value = false;
                                     } else {
@@ -1483,10 +1530,11 @@ class HomeScreen extends HookWidget {
                                         .getSelectedIndices.isNotEmpty) {
                                       snapshot.setPaymentTypeString("Express");
                                       isLoading.value = true;
-                                      snapshot.setPaymentType(
-                                          type: PaymentType.EXPRESS,
-                                          method: PaymentType.CASH,
-                                          price: snapshot.getTotal.toString());
+
+                                      // snapshot.setPaymentType(
+                                      //     type: PaymentType.EXPRESS,
+                                      //     method: PaymentType.CASH,
+                                      //     price: snapshot.getTotal.toString());
 
                                       await printing();
                                       isLoading.value = false;
@@ -1513,7 +1561,13 @@ class HomeScreen extends HookWidget {
                                     if (snapshot
                                         .getSelectedIndices.isNotEmpty) {
                                       snapshot.setPaymentTypeString("Multi");
-
+                                      snapshot.setPaymentType(
+                                        type: PaymentType.MULTI,
+                                        cashPrice: null,
+                                        cardPrice :null,
+                                        creditPrice :null, clean: true,
+                                      );
+                                      indexOfMultiPayTouch.value = 0;
                                       multiPayRows.value = 1;
                                       balance.value = 0.00;
                                       selectedPaymentType.value = [];
@@ -1523,8 +1577,7 @@ class HomeScreen extends HookWidget {
                                         context: context,
                                         builder: (context) {
                                           return StatefulBuilder(builder:
-                                              (context,
-                                                  stateSetterSetModalState) {
+                                              (context, stateSetterSetModalState) {
                                             return Dialog(
                                               shape: RoundedRectangleBorder(
                                                 borderRadius:
@@ -1570,24 +1623,13 @@ class HomeScreen extends HookWidget {
                                                         (indexOfMultiPay) {
                                                           multiPayCashController
                                                               .value
-                                                              .add(
-                                                                  TextEditingController());
-                                                          if (selectedPaymentType
-                                                              .value.isEmpty) {
-                                                            selectedPaymentType
-                                                                .value
-                                                                .add("Cash");
-                                                          } else if (!selectedPaymentType
-                                                              .value
-                                                              .contains(
-                                                                  "Card")) {
-                                                            selectedPaymentType
-                                                                .value
-                                                                .add("Card");
+                                                              .add(TextEditingController());
+                                                          if (selectedPaymentType.value.isEmpty) {
+                                                            selectedPaymentType.value.add("Cash");
+                                                          } else if (!selectedPaymentType.value.contains("Card")) {
+                                                            selectedPaymentType.value.add("Card");
                                                           } else {
-                                                            selectedPaymentType
-                                                                .value
-                                                                .add("Credit");
+                                                            selectedPaymentType.value.add("Credit");
                                                           }
                                                           return Column(
                                                             children: [
@@ -1596,13 +1638,17 @@ class HomeScreen extends HookWidget {
                                                                   Expanded(
                                                                     child:
                                                                         TextFormFieldCustom(
-                                                                      controller:
-                                                                          multiPayCashController
-                                                                              .value[indexOfMultiPay],
+                                                                          onTap: (){
+                                                                            stateSetterSetModalState((){
+                                                                              indexOfMultiPayTouch.value = indexOfMultiPay;
+
+                                                                            });
+                                                                          },
+                                                                      controller: multiPayCashController.value[indexOfMultiPay],
                                                                       hintName:
                                                                           "Amount",
                                                                       autoFocus:
-                                                                          true,
+                                                                          false,
                                                                       onFieldSubmitted:
                                                                           (value) async {
                                                                         if ((formKey.currentState?.validate() ??
@@ -1615,15 +1661,14 @@ class HomeScreen extends HookWidget {
                                                                         FilteringTextInputFormatter
                                                                             .digitsOnly,
                                                                       ],
+
                                                                       onChanged:
                                                                           (value) {
-                                                                        if (value
-                                                                            .isNotEmpty) {
+                                                                        if (value.isNotEmpty) {
                                                                           stateSetterSetModalState(
                                                                               () {
                                                                             totalAmount.add(0);
-                                                                            totalAmount[indexOfMultiPay] =
-                                                                                double.parse(value);
+                                                                            totalAmount[indexOfMultiPay] = double.parse(value);
                                                                             double
                                                                                 sum =
                                                                                 totalAmount.fold(0, (previous, current) => previous + current);
@@ -1632,17 +1677,14 @@ class HomeScreen extends HookWidget {
                                                                             snapshot.setCashAndBalance(
                                                                                 cash: sum,
                                                                                 balance: balance.value);
-                                                                            snapshot.setPaymentType(
-                                                                                type: PaymentType.MULTI,
-                                                                                method: selectedPaymentType.value[indexOfMultiPay] == "Cash"
-                                                                                    ? PaymentType.CASH
-                                                                                    : selectedPaymentType.value[indexOfMultiPay] == "Card"
-                                                                                        ? PaymentType.CARD
-                                                                                        : selectedPaymentType.value[indexOfMultiPay] == "Credit"
-                                                                                            ? PaymentType.CREDIT
-                                                                                            : PaymentType.NONE,
-                                                                                price: totalAmount[indexOfMultiPay].toString());
+
                                                                           });
+                                                                          snapshot.setPaymentType(
+                                                                            type: PaymentType.MULTI,
+                                                                            cashPrice: selectedPaymentType.value[indexOfMultiPay] == "Cash" ? multiPayCashController.value[indexOfMultiPay].text:null,
+                                                                            cardPrice : selectedPaymentType.value[indexOfMultiPay] == "Card" ? multiPayCashController.value[indexOfMultiPay].text:null,
+                                                                            creditPrice  : selectedPaymentType.value[indexOfMultiPay] == "Credit" ? multiPayCashController.value[indexOfMultiPay].text:null, clean: false,
+                                                                          );
                                                                         } else {
                                                                           showSnackBar(
                                                                               context: context,
@@ -1795,22 +1837,16 @@ class HomeScreen extends HookWidget {
                                                           width: 50.w,
                                                           child: CustomButton(
                                                             onTap: () async {
-                                                              if ((formKey
-                                                                      .currentState
-                                                                      ?.validate() ??
-                                                                  false)) {
-                                                                Navigator.pop(
-                                                                    context);
-                                                                if (!balance
-                                                                    .value
-                                                                    .isNegative) {
+                                                              if ((formKey.currentState?.validate() ??false)) {
+                                                                Navigator.pop(context);
+                                                                if (!balance.value.isNegative) {
+
+
                                                                   await printing();
                                                                 } else {
                                                                   showDialog(
-                                                                    context:
-                                                                        context,
-                                                                    builder:
-                                                                        (context) {
+                                                                    context: context,
+                                                                    builder: (context) {
                                                                       return showAwesomeDialogue(
                                                                           title:
                                                                               "Warning",
@@ -1826,6 +1862,55 @@ class HomeScreen extends HookWidget {
                                                           ),
                                                         ),
                                                       ),
+                                                      kSizedBox20,
+                                                      Padding(
+                                                        padding: const EdgeInsets.all(12.0),
+                                                        child: Container(
+                                                          // Keyboard is transparent
+                                                          decoration: BoxDecoration(
+                                                              color: ColorManager.primaryLight,
+
+                                                              borderRadius: BorderRadius.circular(12)
+                                                          ),
+                                                          child: VirtualKeyboard(
+                                                            // [0-9] + .
+                                                              type: VirtualKeyboardType.Numeric,
+                                                              textColor: Colors.white,
+                                                              textController: multiPayCashController.value[indexOfMultiPayTouch.value] ?? cashController,
+                                                              // Callback for key press event
+                                                              onKeyPress: (key) {
+                                                                if (multiPayCashController.value[indexOfMultiPayTouch.value].text.isNotEmpty) {
+                                                                  stateSetterSetModalState(
+                                                                          () {
+                                                                        totalAmount.add(0);
+                                                                        totalAmount[indexOfMultiPayTouch.value] = double.parse(multiPayCashController.value[indexOfMultiPayTouch.value].text);
+                                                                        double
+                                                                        sum =
+                                                                        totalAmount.fold(0, (previous, current) => previous + current);
+                                                                        balance.value =
+                                                                            sum - snapshot.getTotal;
+                                                                        snapshot.setCashAndBalance(
+                                                                            cash: sum,
+                                                                            balance: balance.value);
+                                                                      });
+                                                                  snapshot.setPaymentType(
+                                                                    type: PaymentType.MULTI,
+                                                                    cashPrice: selectedPaymentType.value[indexOfMultiPayTouch.value] == "Cash" ? multiPayCashController.value[indexOfMultiPayTouch.value].text:null,
+                                                                    cardPrice : selectedPaymentType.value[indexOfMultiPayTouch.value] == "Card" ? multiPayCashController.value[indexOfMultiPayTouch.value].text:null,
+                                                                    creditPrice  : selectedPaymentType.value[indexOfMultiPayTouch.value] == "Credit" ? multiPayCashController.value[indexOfMultiPayTouch.value].text:null, clean: false,
+                                                                  );
+                                                                } else {
+                                                                  showSnackBar(
+                                                                      context:
+                                                                      context,
+                                                                      text:
+                                                                      "Please enter a value");
+                                                                }
+                                                              }),
+                                                        ),
+                                                      ),
+
+
                                                     ],
                                                   ),
                                                 ),
@@ -1930,6 +2015,51 @@ class HomeScreen extends HookWidget {
                         ),
                       ),
                     )),
+                isKeyboardVisible.value ?   Positioned(
+                    bottom: MediaQuery.of(context).viewPadding.bottom,
+                    left: 0,
+                    right: 0,
+                    child:  Column(
+                      children: [
+                        InkWell(
+                          onTap: ()=> isKeyboardVisible.value = false,
+
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                               borderRadius: BorderRadius.circular(12)
+                            ),
+                            width: 500 ,
+                            height: 40,
+                            child: Center(
+                              child: Text("Dismiss", style: getBoldStyle(color: ColorManager.red,fontSize: FontSize.s18)),
+                            ),
+                          ),
+                        ),
+                        Center(
+                          child: Container(
+                            // Keyboard is transparent
+                            width: 500,
+                            decoration: BoxDecoration(
+                                color: ColorManager.primaryLight,
+                                borderRadius: BorderRadius.circular(12)
+                            ),
+                            child: VirtualKeyboard(
+                              // [0-9] + .
+                                type: VirtualKeyboardType.Numeric,
+                                textColor: Colors.white,
+textController: qtyControllers.value[indexOfPrice.value],
+                                // Callback for key press event
+                                onKeyPress: (key) {
+                                  if (qtyControllers.value[indexOfPrice.value]?.text.isNotEmpty ?? false) {
+                                    snapshot.editProductFromSummary(snapshot.getSelectedIndices[indexOfPrice.value], qtyControllers.value[indexOfPrice.value]?.text ?? "0");
+                                  }
+                                }),
+                          ),
+                        ),
+                      ],
+                    ),
+                ):kSizedBox,
                 isLoading.value
                     ? Positioned.fill(
                         child: Align(

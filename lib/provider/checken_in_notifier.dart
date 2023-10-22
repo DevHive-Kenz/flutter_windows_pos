@@ -25,75 +25,107 @@ class CheckInOutNotifier extends ChangeNotifier{
 
 
  Future<void> setCheckIn({required bool checkIN, required BuildContext context}) async {
-   final dbFuncNotifier = context.read<DataBaseFunctionalities>();
-   final user = await _cacheService.readCache(key: AppStrings.userId);
-   CheckInModel? _dataToStore;
-   if(checkIN){
-     _dataToStore = CheckInModel(isCheckIN: checkIN,checkIn: DateTime.now(),checkOut: null,user: user);
-   }else{
-     _dataToStore = CheckInModel(isCheckIN: checkIN,checkIn: _isCheckIn?.checkIn ,checkOut: DateTime.now(),user: user);
+
+   try{
+     final dbFuncNotifier = context.read<DataBaseFunctionalities>();
+     final user = await _cacheService.readCache(key: AppStrings.userId);
+     CheckInModel? _dataToStore;
+     if(checkIN){
+       _dataToStore = CheckInModel(isCheckIN: checkIN,checkIn: DateTime.now(),checkOut: null,user: user);
+     }else{
+       _dataToStore = CheckInModel(isCheckIN: checkIN,checkIn: _isCheckIn?.checkIn ,checkOut: DateTime.now(),user: user);
+     }
+     notifyListeners();
+     await dbFuncNotifier.saveDataBase(dbName: AppStrings.dbCheckIN, dbData: _dataToStore);
+   }catch(e){
+     showDialog(
+       context: context,
+       builder: (context) {
+         return               showAwesomeDialogue(content: "Please Try Again Later",title: "Warning");
+
+
+       },
+     );
    }
-   notifyListeners();
-   await dbFuncNotifier.saveDataBase(dbName: AppStrings.dbCheckIN, dbData: _dataToStore);
+
  }
 
-  Future<void> retrieveCheckIn({ required BuildContext context}) async {
-    final dbFuncNotifier = context.read<DataBaseFetchNotifier>();
-    await dbFuncNotifier.fetchCheckInModel(context: context);
+  Future<void> retrieveCheckIn({ required BuildContext context}) async
+  {
+    try{
+      final dbFuncNotifier = context.read<DataBaseFetchNotifier>();
+      await dbFuncNotifier.fetchCheckInModel(context: context);
 
-    _isCheckIn = dbFuncNotifier.getCheckIn;
-    notifyListeners();
-    print( "33333333333 ${_isCheckIn?.isCheckIN}");
-    if(_isCheckIn?.isCheckIN == null || _isCheckIn?.isCheckIN== false){
-    showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) {
-          return StatefulBuilder(builder: (context, stateSetterSetModalState){
-            return Dialog(
-              shape: RoundedRectangleBorder(
-                borderRadius:BorderRadius.circular(12.0),
-              ),
-              child: Container(
-                width: 150.w,
-                padding: EdgeInsets.all(AppPadding.p22),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  color: ColorManager.white,
-
+      _isCheckIn = dbFuncNotifier.getCheckIn;
+      notifyListeners();
+      print( "33333333333 ${_isCheckIn?.isCheckIN}");
+      if(_isCheckIn?.isCheckIN == null || _isCheckIn?.isCheckIN== false){
+        showDialog(
+          context: context,
+          barrierDismissible: true,
+          builder: (context) {
+            return StatefulBuilder(builder: (context, stateSetterSetModalState){
+              return Dialog(
+                shape: RoundedRectangleBorder(
+                  borderRadius:BorderRadius.circular(12.0),
                 ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min ,
-                  children: [
-                    Text("Welcome to the POS setup. It seems you haven't started your shift yet. It's essential to check in to ensure all sales are recorded correctly during your active hours.",style: getSemiBoldStyle(color: ColorManager.black,fontSize: AppSize.s16),),
-                    kSizedBox20,
-                    Align(
-                      child: SizedBox(
-                        width: 50.w,
-                        child: Consumer<CheckOutINIDNotifier>(
-                          builder: (context, snapshot,_) {
-                            return snapshot.getIsLoading ? CircularProgressIndicatorWidget() : CustomButton(onTap: () async {
-                              await snapshot.checkinOut(type: "checkin", context: context);
-                              setCheckIn(checkIN: true, context: context);
-                              Navigator.pop(context);
-                            },
-                              title: "Check in",
-                              width: 35.w,
-                            );
-                          }
+                child: Container(
+                  width: 150.w,
+                  padding: EdgeInsets.all(AppPadding.p22),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    color: ColorManager.white,
+
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min ,
+                    children: [
+                      Text("Welcome to the POS setup. It seems you haven't started your shift yet. It's essential to check in to ensure all sales are recorded correctly during your active hours.",style: getSemiBoldStyle(color: ColorManager.black,fontSize: AppSize.s16),),
+                      kSizedBox20,
+                      Align(
+                        child: SizedBox(
+                          width: 50.w,
+                          child: Consumer<CheckOutINIDNotifier>(
+                              builder: (context, snapshot,_) {
+                                return snapshot.getIsLoading ? CircularProgressIndicatorWidget() : CustomButton(onTap: () async {
+                                  await snapshot.checkinOut(type: "checkin", context: context).then((value) {
+                                    if(value == "OK"){
+                                      setCheckIn(checkIN: true, context: context);
+                                      Navigator.pop(context);
+                                    }
+
+                                  });
+
+                                },
+                                  title: "Check in",
+                                  width: 35.w,
+                                );
+                              }
+                          ),
                         ),
-                      ),
-                    )
-                  ],
+                      )
+                    ],
+                  ),
                 ),
-              ),
-            );
-          });
+              );
+            });
+
+          },
+        );
+      }
+      notifyListeners();
+    }catch(e){
+      showDialog(
+        context: context,
+        builder: (context) {
+          return               showAwesomeDialogue(content: "Please Try Again Later",title: "Warning");
+
 
         },
       );
+
     }
-    notifyListeners();
+
   }
   
   

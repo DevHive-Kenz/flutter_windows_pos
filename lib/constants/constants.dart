@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 
 import 'package:kenz/constants/style_manager.dart';
 import 'package:kenz/constants/values_manger.dart';
+import 'package:virtual_keyboard_multi_language/virtual_keyboard_multi_language.dart';
 
 import '../main.dart';
 import 'app_routes.dart';
@@ -265,6 +266,37 @@ String formatString(String input) {
     return input;
   }
 }
+
+// Future showKeyboard(){
+//   print("ddddddddddddd");
+//   return showModalBottomSheet(
+//       backgroundColor:
+//       Colors.transparent,
+//       context: navigatorKey.currentContext!,
+//       elevation: 500,
+//       isScrollControlled: true,
+//       shape:
+//       const RoundedRectangleBorder(
+//         borderRadius:
+//         BorderRadius.vertical(
+//           top: Radius.circular(20),
+//         ),
+//       ),
+//       clipBehavior: Clip.hardEdge,
+//       builder:
+//           (BuildContext context) {
+//       return Container(
+//       // Keyboard is transparent
+//       color: Colors.red,
+//       child: VirtualKeyboard(
+//         // [0-9] + .
+//           type: VirtualKeyboardType.Numeric,
+//           // Callback for key press event
+//           onKeyPress: (key) => print(key.text)),
+//       );
+//     }
+//   );
+// }
 
 Widget showAwesomeDialogue({
  String? title,

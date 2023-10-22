@@ -48,15 +48,14 @@ class DraftNotifier extends ChangeNotifier {
         listProductData.add(SalesProductModel(
             name: data.name,
             name_arabic: data.name_arabic,
-            added: null,
-            discount: null,
-            discount_type: null,
-            discounted_price: null,
+            discount: "0.00",
+            discount_type: "fixed",
+            discounted_price: "0.00",
             gross_total: data.priceWithoutVat?.toStringAsFixed(2),
             quantity:  data.qty.toString(),
             total_amount:data.total?.toStringAsFixed(2),
             vat_amount: data.vat?.toStringAsFixed(2),
-          id: data.id.toString()
+          product_id: data.id.toString()
         ));
       });
 
@@ -122,7 +121,6 @@ class DraftNotifier extends ChangeNotifier {
       notifyListeners();
       return "OK";
     }catch(e){
-      print("ddddddddddd $e");
       showDialog(
         context: context,
         builder: (context) {

@@ -18,7 +18,7 @@ class PosSalesModelAdapter extends TypeAdapter<PosSalesModel> {
     };
     return PosSalesModel(
       customerName: fields[16] as String?,
-      multi: fields[17] as PaymentTypeModel?,
+      multiModelRowData: (fields[17] as List?)?.cast<PaymentTypeModel>(),
       user_id: fields[0] as int?,
       order_id: fields[1] as String?,
       invoice_id: fields[2] as String?,
@@ -74,7 +74,7 @@ class PosSalesModelAdapter extends TypeAdapter<PosSalesModel> {
       ..writeByte(16)
       ..write(obj.customerName)
       ..writeByte(17)
-      ..write(obj.multi);
+      ..write(obj.multiModelRowData);
   }
 
   @override
@@ -95,9 +95,9 @@ class PosSalesModelAdapter extends TypeAdapter<PosSalesModel> {
 PosSalesModel _$PosSalesModelFromJson(Map<String, dynamic> json) =>
     PosSalesModel(
       customerName: json['customerName'] as String?,
-      multi: json['multi'] == null
-          ? null
-          : PaymentTypeModel.fromJson(json['multi'] as Map<String, dynamic>),
+      multiModelRowData: (json['multiModelRowData'] as List<dynamic>?)
+          ?.map((e) => PaymentTypeModel.fromJson(e as Map<String, dynamic>))
+          .toList(),
       user_id: json['user_id'] as int?,
       order_id: json['order_id'] as String?,
       invoice_id: json['invoice_id'] as String?,
@@ -135,5 +135,6 @@ Map<String, dynamic> _$PosSalesModelToJson(PosSalesModel instance) =>
       'created': instance.created,
       'items': instance.items?.map((e) => e.toJson()).toList(),
       'customerName': instance.customerName,
-      'multi': instance.multi?.toJson(),
+      'multiModelRowData':
+          instance.multiModelRowData?.map((e) => e.toJson()).toList(),
     };

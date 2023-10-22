@@ -17,7 +17,7 @@ class SalesProductModelAdapter extends TypeAdapter<SalesProductModel> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return SalesProductModel(
-      id: fields[10] as String?,
+      product_id: fields[9] as String?,
       name: fields[0] as String?,
       name_arabic: fields[1] as String?,
       quantity: fields[2] as String?,
@@ -27,14 +27,13 @@ class SalesProductModelAdapter extends TypeAdapter<SalesProductModel> {
       total_amount: fields[6] as String?,
       gross_total: fields[7] as String?,
       vat_amount: fields[8] as String?,
-      added: fields[9] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, SalesProductModel obj) {
     writer
-      ..writeByte(11)
+      ..writeByte(10)
       ..writeByte(0)
       ..write(obj.name)
       ..writeByte(1)
@@ -54,9 +53,7 @@ class SalesProductModelAdapter extends TypeAdapter<SalesProductModel> {
       ..writeByte(8)
       ..write(obj.vat_amount)
       ..writeByte(9)
-      ..write(obj.added)
-      ..writeByte(10)
-      ..write(obj.id);
+      ..write(obj.product_id);
   }
 
   @override
@@ -76,7 +73,7 @@ class SalesProductModelAdapter extends TypeAdapter<SalesProductModel> {
 
 SalesProductModel _$SalesProductModelFromJson(Map<String, dynamic> json) =>
     SalesProductModel(
-      id: json['id'] as String?,
+      product_id: json['product_id'] as String?,
       name: json['name'] as String?,
       name_arabic: json['name_arabic'] as String?,
       quantity: json['quantity'] as String?,
@@ -86,7 +83,6 @@ SalesProductModel _$SalesProductModelFromJson(Map<String, dynamic> json) =>
       total_amount: json['total_amount'] as String?,
       gross_total: json['gross_total'] as String?,
       vat_amount: json['vat_amount'] as String?,
-      added: json['added'] as String?,
     );
 
 Map<String, dynamic> _$SalesProductModelToJson(SalesProductModel instance) =>
@@ -100,6 +96,5 @@ Map<String, dynamic> _$SalesProductModelToJson(SalesProductModel instance) =>
       'total_amount': instance.total_amount,
       'gross_total': instance.gross_total,
       'vat_amount': instance.vat_amount,
-      'added': instance.added,
-      'id': instance.id,
+      'product_id': instance.product_id,
     };

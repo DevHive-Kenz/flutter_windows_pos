@@ -55,19 +55,67 @@ class AppInterceptors extends Interceptor {
     if (err.type == DioExceptionType.badResponse) {
       switch (err.response?.statusCode) {
         case 400:
+          showDialog(
+            context: navigatorKey.currentContext!,
+            builder: (context) {
+              return           showAwesomeDialogue(content: "Please Try Again Later (400)",title: "Warning");
+
+            },
+          );
+          break;
         case 401:
+          showDialog(
+            context: navigatorKey.currentContext!,
+            builder: (context) {
+              return           showAwesomeDialogue(content: "Please Try Again Later (401)",title: "Warning");
+
+            },
+          );
+        break;
         case 404:
+          showDialog(
+            context: navigatorKey.currentContext!,
+            builder: (context) {
+              return           showAwesomeDialogue(content: "Please Try Again Later (404)",title: "Warning");
+
+            },
+          );
+        break;
         case 409:
+          showDialog(
+            context: navigatorKey.currentContext!,
+            builder: (context) {
+              return           showAwesomeDialogue(content: "Please Try Again Later (409)",title: "Warning");
+
+            },
+          );
+        break;
         case 500:
+          showDialog(
+            context: navigatorKey.currentContext!,
+            builder: (context) {
+              return           showAwesomeDialogue(content: "Please Try Again Later (500)",title: "Warning");
+
+            },
+          );
+        break;
         case 502:
-          // showAwesomeDialogue(
-          //   title: "Error",
-          //   content: "Please try again later",
-          //   type: DialogType.error,
-          // );
-          break;
+          showDialog(
+            context: navigatorKey.currentContext!,
+            builder: (context) {
+              return           showAwesomeDialogue(content: "Please Try Again Later (502)",title: "Warning");
+
+            },
+          );
+        break;
         default:
-          break;
+          showDialog(
+            context: navigatorKey.currentContext!,
+            builder: (context) {
+              return           showAwesomeDialogue(content: "Please Try Again Later ${err.response?.data["message"]}",title: "Warning");
+
+            },
+          );       break;
       }
     } else if (err.type == DioExceptionType.unknown) {
        SnackBar snackBar = SnackBar(

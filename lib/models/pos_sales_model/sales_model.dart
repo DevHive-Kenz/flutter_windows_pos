@@ -27,8 +27,8 @@ class PosSalesModel{
   @HiveField(13) final String? created;
   @HiveField(14) final List<SalesProductModel>? items;
   @HiveField(16) final String? customerName;
-  @HiveField(17) final PaymentTypeModel? multi;
-  PosSalesModel({this.customerName,this.multi,
+  @HiveField(17) final List<PaymentTypeModel>? multiModelRowData;
+  PosSalesModel({this.customerName,this.multiModelRowData,
     this.user_id, this.order_id, this.invoice_id, this.shift, this.total, this.sub_total, this.vat_total, this.vat_percentage, this.payment_type, this.given_amount, this.balance, this.discount_price, this.is_parcel, this.created, this.items,
 
 

@@ -9,12 +9,11 @@ part 'payment_type_model.g.dart';
 
 @JsonSerializable(explicitToJson: true)
 class PaymentTypeModel{
-  @HiveField(0) final String? order;
-  @HiveField(1) final String? cash;
-  @HiveField(2) final String? credit;
-  @HiveField(3) final String? card;
+  @HiveField(0) final String? paymentMethod;
+  @HiveField(1) final String? amount;
 
-  PaymentTypeModel({this.order, this.cash, this.credit, this.card,
+
+  PaymentTypeModel({this.amount, this.paymentMethod,
 
   });
   factory PaymentTypeModel.fromJson(Map<String, dynamic> json) => _$PaymentTypeModelFromJson(json);

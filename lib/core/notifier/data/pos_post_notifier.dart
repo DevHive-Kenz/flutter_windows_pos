@@ -46,8 +46,13 @@ class PosPostNotifier extends ChangeNotifier {
 
         final listData = await _posPostAPI.postPosApi(data: posSaleNotifier.getPostSales);
 
-        if(listData["status"] == 200 ||listData["status"] == 201){
-         showAwesomeDialogue(content: "Successfully Posted Data");
+        if(listData["status"] == 200 || listData["status"] == 201){
+          showDialog(
+            context: context,
+            builder: (context) {
+              return showAwesomeDialogue(title: "Success", content: "Successfully Posted Data",icon: Icons.check,color: Colors.green);
+            },
+          );
          dbFuncNotifier.deleteDB(dbTable: AppStrings.dbPOSPostSalesInfo);
          _isLoading = false;
          notifyListeners();

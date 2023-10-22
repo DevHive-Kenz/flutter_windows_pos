@@ -57,18 +57,15 @@ class PosSaleNotifier extends ChangeNotifier {
           invoice_id: productManagementNotifier.getInvoiceNo.toString(),
           items:listProductData,
           is_parcel: productManagementNotifier.getIsParcel.toString(),
-          multi:productManagementNotifier.getPaymentTypeString == "Multi" ? PaymentTypeModel(order: productManagementNotifier.getPaymentType.keys.first,
-              credit:productManagementNotifier.getPaymentType[productManagementNotifier.getPaymentType.keys.first]?.credit,
-              cash: productManagementNotifier.getPaymentType[productManagementNotifier.getPaymentType.keys.first]?.cash,
-              card: productManagementNotifier.getPaymentType[productManagementNotifier.getPaymentType.keys.first]?.card
-          ):null,
+          multiModelRowData:productManagementNotifier.getPaymentTypeString == "Multi" ? productManagementNotifier.getMultiModelList:null,
           sub_total: productManagementNotifier.getSubTotal.toStringAsFixed(2),
           total: productManagementNotifier.getTotal.toStringAsFixed(2),
           vat_total: productManagementNotifier.getTaxAmount.toStringAsFixed(2),
-          vat_percentage:context.read<SetupSettingsNotifier>().getVatPercentage.toString(),
+          // vat_percentage:context.read<SetupSettingsNotifier>().getVatPercentage.toString(),
+          vat_percentage:"15",
           shift: checkeninOut.getSeriesFetch ?? 0,
           customerName: customerNotifier.getCustomerName,
-        payment_type: productManagementNotifier.getPaymentTypeString
+        payment_type: (productManagementNotifier.getPaymentTypeString?.toLowerCase().contains("express") ?? false) ? "express-checkout":productManagementNotifier.getPaymentTypeString
       ));
       _posPostSale.add(PosSalesModel(
           balance: productManagementNotifier.getBalance.toString(),
@@ -80,18 +77,17 @@ class PosSaleNotifier extends ChangeNotifier {
           invoice_id: productManagementNotifier.getInvoiceNo.toString(),
           items:listProductData,
           is_parcel:productManagementNotifier.getIsParcel.toString(),
-          multi:productManagementNotifier.getPaymentTypeString == "Multi" ? PaymentTypeModel(order: productManagementNotifier.getPaymentType.keys.first,
-              credit:productManagementNotifier.getPaymentType[productManagementNotifier.getPaymentType.keys.first]?.credit,
-              cash: productManagementNotifier.getPaymentType[productManagementNotifier.getPaymentType.keys.first]?.cash,
-              card: productManagementNotifier.getPaymentType[productManagementNotifier.getPaymentType.keys.first]?.card
-          ):null,
+          multiModelRowData:productManagementNotifier.getPaymentTypeString == "Multi" ? productManagementNotifier.getMultiModelList:null,
+
           sub_total: productManagementNotifier.getSubTotal.toStringAsFixed(2),
           total: productManagementNotifier.getTotal.toStringAsFixed(2),
           vat_total: productManagementNotifier.getTaxAmount.toStringAsFixed(2),
-          vat_percentage:context.read<SetupSettingsNotifier>().getVatPercentage.toString(),
+          // vat_percentage:context.read<SetupSettingsNotifier>().getVatPercentage,
+          vat_percentage:"15",
           shift: checkeninOut.getSeriesFetch ?? 0,
           customerName: customerNotifier.getCustomerName,
-          payment_type: productManagementNotifier.getPaymentTypeString
+          payment_type: (productManagementNotifier.getPaymentTypeString?.toLowerCase().contains("express") ?? false) ? "express-checkout":productManagementNotifier.getPaymentTypeString
+
       ));
       notifyListeners();
       print("lllllllllll2w ${_posSale.length} ");
