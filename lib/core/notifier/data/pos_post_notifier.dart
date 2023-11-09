@@ -53,7 +53,7 @@ class PosPostNotifier extends ChangeNotifier {
               return showAwesomeDialogue(title: "Success", content: "Successfully Posted Data",icon: Icons.check,color: Colors.green);
             },
           );
-         dbFuncNotifier.deleteDB(dbTable: AppStrings.dbPOSPostSalesInfo);
+        await dbFuncNotifier.deleteDB(dbTable: AppStrings.dbPOSPostSalesInfo);
          _isLoading = false;
          notifyListeners();
          return "OK";

@@ -49,8 +49,8 @@ class _MainScreenState extends State<MainScreen> {
       context.read<ProductListNotifier>().getProductList(context: context),
       context.read<CategoryNotifier>().category(context: context),
       context.read<ProfileNotifier>().profile(context: context),
-      context.read<SeriesFetchNotifier>().seriesFetch(context: context),
-
+      context.read<PosSaleNotifier>().retrievePostInvoice(context: context),
+      // context.read<SeriesFetchNotifier>().seriesFetch(context: context),
       context.read<ProductManagementNotifier>().retrieveOrderAndInvoiceID(context: context),
       context.read<CheckInOutNotifier>().retrieveCheckIn(context: context),
       context.read<DraftNotifier>().retrieveDraftID(context: context),

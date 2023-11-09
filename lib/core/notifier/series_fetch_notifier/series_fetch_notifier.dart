@@ -36,11 +36,10 @@ class SeriesFetchNotifier extends ChangeNotifier {
       final profileNotifier = context.read<ProfileNotifier>();
 
       await generalNotifier.checkUserConnection();
-  if(generalNotifier.getNetAvailableBool){
+  if(generalNotifier.getNetAvailableBool ){
     final listData = await _seriesFetchAPI.seriesFetch(type: "INVOICE");
 
     if(listData["status"] == 200){
-
 
       _seriesFetch= listData["result"].toString();
       print("33333333333 ${profileNotifier.getProfile?.result?[0].companySalePrefix}");

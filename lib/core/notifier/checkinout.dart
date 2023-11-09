@@ -5,9 +5,11 @@ import '../../../../constants/constants.dart';
 import '../../../../provider/general_notifier.dart';
 import '../../../provider/product_management_notifier.dart';
 import '../../constants/string_manager.dart';
+import '../../provider/checken_in_notifier.dart';
 import '../../provider/dataBase_fetch_notifier.dart';
 import '../../provider/database_functionalities_notifier.dart';
 import '../api/checkout_api.dart';
+import 'data/pos_post_notifier.dart';
 
 
 
@@ -35,6 +37,8 @@ class CheckOutINIDNotifier extends ChangeNotifier {
       notifyListeners();
       final dbFuncNotifier = context.read<DataBaseFunctionalities>();
       final generalNotifier = context.read<GeneralNotifier>();
+      final checkInOutNotifier = context.read<CheckInOutNotifier>();
+
 
       if(generalNotifier.getNetAvailableBool){
         final listData = await _checkINOUTAPI.checkINOUTAPI(data: type);
@@ -49,7 +53,15 @@ class CheckOutINIDNotifier extends ChangeNotifier {
         }else{
           _isLoading = false;
           notifyListeners();
-          Navigator.pushReplacementNamed(context, loginRoute);
+          await context.read<PosPostNotifier>().getPostList(context: context).then((value) async {
+            if(value =="OK"){
+              await _checkINOUTAPI.checkINOUTAPI(data: "checkout").then((value) async {
+                  await checkInOutNotifier.setCheckIn(checkIN: false, context: context);
+                  Navigator.pushReplacementNamed(context, loginRoute);
+              });
+
+            }
+          });
           showDialog(
             context: context,
             builder: (context) {

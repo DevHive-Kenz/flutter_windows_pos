@@ -18,6 +18,7 @@ import 'package:kenz/provider/setup_settings_notifier.dart';
 
 import '../constants/string_manager.dart';
 import '../core/notifier/checkinout.dart';
+import '../core/notifier/series_fetch_notifier/series_fetch_notifier.dart';
 import '../core/service/shared_preferance_service.dart';
 import '../models/pos_sales_model/sales_model.dart';
 import '../models/pos_sales_model/sales_product_model.dart';
@@ -67,6 +68,7 @@ class PosSaleNotifier extends ChangeNotifier {
           customerName: customerNotifier.getCustomerName,
         payment_type: (productManagementNotifier.getPaymentTypeString?.toLowerCase().contains("express") ?? false) ? "express-checkout":productManagementNotifier.getPaymentTypeString
       ));
+      await retrievePostInvoice(context: context);
       _posPostSale.add(PosSalesModel(
           balance: productManagementNotifier.getBalance.toString(),
           user_id: int.parse(userID),
@@ -142,6 +144,9 @@ class PosSaleNotifier extends ChangeNotifier {
       print("qwe ${dataList.length}");
       _posPostSale = dataList.cast();
       notifyListeners();
+      if(dataList.isEmpty){
+       await context.read<SeriesFetchNotifier>().seriesFetch(context: context);
+      }
       return "OK";
     }catch(e){
       print(e);

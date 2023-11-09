@@ -48,6 +48,7 @@ class DataBaseFunctionalities extends ChangeNotifier {
         notifyListeners();
       }else{
         await _box?.delete(dbTable);
+        print("pppppppppppp");
         notifyListeners();
       }
     }catch(e){

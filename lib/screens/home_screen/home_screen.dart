@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:customizable_counter/customizable_counter.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -78,27 +80,44 @@ class HomeScreen extends HookWidget {
     }
 
     Future<void> printing({bool? isRecentTransaction =false, String? orderNo, String? invoiceNo}) async {
-      isLoading.value = true;
+      try{
+        isLoading.value = true;
 
-      await context.read<InvoicePrintingNotifier>().printInvoice(context: context, isRecentTransaction: isRecentTransaction ?? false, orderID: orderNo ?? "",invoiceID: invoiceNo ?? "").then((value) {
+        await context.read<InvoicePrintingNotifier>().printInvoice(context: context, isRecentTransaction: isRecentTransaction ?? false, orderID: orderNo ?? "",invoiceID: invoiceNo ?? "").then((value) {
 
-        if (context.read<InvoicePrintingNotifier>().getIsDone) {
+          if (context.read<InvoicePrintingNotifier>().getIsDone) {
 
-          isLoading.value = false;
-        } else {
+            isLoading.value = false;
+          } else {
 
-          isLoading.value = false;
-          showDialog(
-            context: context,
-            builder: (context) {
-              return showAwesomeDialogue(
+            isLoading.value = false;
+            showDialog(
+              context: context,
+              builder: (context) {
+                return showAwesomeDialogue(
                   content: "Cannot Print Now, Please Try Again Later",
                   title: "Warning",
-              );
-            },
-          );
-        }
-      });
+                );
+              },
+            );
+          }
+        }).timeout( Duration(seconds: DurationConstant.d30));
+      }on TimeoutException catch(e){
+        showDialog(
+          context: context,
+          builder: (context) {
+            return showAwesomeDialogue(title: "Timeout", content: "Sale successfully captured, but printing issue detected. Please ensure your printer 'MHT-P80A' is connected and functioning correctly.\nContact support if the problem persists.\nThank you for your patience.",);
+          },
+        );
+      }catch(e){
+        showDialog(
+          context: context,
+          builder: (context) {
+            return showAwesomeDialogue(title: "Warning", content: "Sale successfully captured, but printing issue detected. Please ensure your printer 'MHT-P80A' is connected and functioning correctly.\nContact support if the problem persists.\nThank you for your patience.",);
+          },
+        );
+      }
+
     }
 
     return Scaffold(
@@ -599,7 +618,6 @@ class HomeScreen extends HookWidget {
                                                                         return InkWell(
                                                                           onTap: () {
                                                                             productManagementNotifier.cleanAfterSale();
-
                                                                             draftData.items?.forEach((element) {
                                                                               ProductContentModel product = ProductContentModel(
                                                                                   price: double.parse(element.gross_total ?? "0.00") + double.parse(element.vat_amount ?? "0.00"),
@@ -616,6 +634,7 @@ class HomeScreen extends HookWidget {
                                                                                   isDelete: false,
                                                                                   context: context,
                                                                                   isDraftConverting: true);
+                                                                              snapshotDraft.deleteDraft(index: index, context: context);
                                                                             });
                                                                             Navigator.pop(context);
                                                                           },
@@ -1594,324 +1613,326 @@ class HomeScreen extends HookWidget {
                                                 ),
                                                 child: Form(
                                                   key: formKey,
-                                                  child: Column(
-                                                    mainAxisSize:
-                                                        MainAxisSize.min,
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      Row(
-                                                        children: [
-                                                          Icon(Icons.payments,
-                                                              color: ColorManager
-                                                                  .primaryLight),
-                                                          Text(
-                                                            "Multiple pay",
-                                                            style: getBoldStyle(
+                                                  child: SingleChildScrollView(
+                                                    child: Column(
+                                                      mainAxisSize:
+                                                          MainAxisSize.min,
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Row(
+                                                          children: [
+                                                            Icon(Icons.payments,
                                                                 color: ColorManager
-                                                                    .primaryLight,
-                                                                fontSize:
-                                                                    AppSize
-                                                                        .s18),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                      kSizedBox10,
-                                                      ...List.generate(
-                                                        multiPayRows.value,
-                                                        (indexOfMultiPay) {
-                                                          multiPayCashController
-                                                              .value
-                                                              .add(TextEditingController());
-                                                          if (selectedPaymentType.value.isEmpty) {
-                                                            selectedPaymentType.value.add("Cash");
-                                                          } else if (!selectedPaymentType.value.contains("Card")) {
-                                                            selectedPaymentType.value.add("Card");
-                                                          } else {
-                                                            selectedPaymentType.value.add("Credit");
-                                                          }
-                                                          return Column(
-                                                            children: [
-                                                              Row(
-                                                                children: [
-                                                                  Expanded(
-                                                                    child:
-                                                                        TextFormFieldCustom(
-                                                                          onTap: (){
-                                                                            stateSetterSetModalState((){
-                                                                              indexOfMultiPayTouch.value = indexOfMultiPay;
+                                                                    .primaryLight),
+                                                            Text(
+                                                              "Multiple pay",
+                                                              style: getBoldStyle(
+                                                                  color: ColorManager
+                                                                      .primaryLight,
+                                                                  fontSize:
+                                                                      AppSize
+                                                                          .s18),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                        kSizedBox10,
+                                                        ...List.generate(
+                                                          multiPayRows.value,
+                                                          (indexOfMultiPay) {
+                                                            multiPayCashController
+                                                                .value
+                                                                .add(TextEditingController());
+                                                            if (selectedPaymentType.value.isEmpty) {
+                                                              selectedPaymentType.value.add("Cash");
+                                                            } else if (!selectedPaymentType.value.contains("Card")) {
+                                                              selectedPaymentType.value.add("Card");
+                                                            } else {
+                                                              selectedPaymentType.value.add("Credit");
+                                                            }
+                                                            return Column(
+                                                              children: [
+                                                                Row(
+                                                                  children: [
+                                                                    Expanded(
+                                                                      child:
+                                                                          TextFormFieldCustom(
+                                                                            onTap: (){
+                                                                              stateSetterSetModalState((){
+                                                                                indexOfMultiPayTouch.value = indexOfMultiPay;
+
+                                                                              });
+                                                                            },
+                                                                        controller: multiPayCashController.value[indexOfMultiPay],
+                                                                        hintName:
+                                                                            "Amount",
+                                                                        autoFocus:
+                                                                            false,
+                                                                        onFieldSubmitted:
+                                                                            (value) async {
+                                                                          if ((formKey.currentState?.validate() ??
+                                                                              false)) {
+                                                                            Navigator.pop(
+                                                                                context);
+                                                                          }
+                                                                        },
+                                                                        inputFormatters: [
+                                                                          FilteringTextInputFormatter
+                                                                              .digitsOnly,
+                                                                        ],
+
+                                                                        onChanged:
+                                                                            (value) {
+                                                                          if (value.isNotEmpty) {
+                                                                            stateSetterSetModalState(
+                                                                                () {
+                                                                              totalAmount.add(0);
+                                                                              totalAmount[indexOfMultiPay] = double.parse(value);
+                                                                              double
+                                                                                  sum =
+                                                                                  totalAmount.fold(0, (previous, current) => previous + current);
+                                                                              balance.value =
+                                                                                  sum - snapshot.getTotal;
+                                                                              snapshot.setCashAndBalance(
+                                                                                  cash: sum,
+                                                                                  balance: balance.value);
 
                                                                             });
-                                                                          },
-                                                                      controller: multiPayCashController.value[indexOfMultiPay],
-                                                                      hintName:
-                                                                          "Amount",
-                                                                      autoFocus:
-                                                                          false,
-                                                                      onFieldSubmitted:
-                                                                          (value) async {
-                                                                        if ((formKey.currentState?.validate() ??
-                                                                            false)) {
-                                                                          Navigator.pop(
-                                                                              context);
-                                                                        }
-                                                                      },
-                                                                      inputFormatters: [
-                                                                        FilteringTextInputFormatter
-                                                                            .digitsOnly,
-                                                                      ],
-
-                                                                      onChanged:
-                                                                          (value) {
-                                                                        if (value.isNotEmpty) {
-                                                                          stateSetterSetModalState(
-                                                                              () {
-                                                                            totalAmount.add(0);
-                                                                            totalAmount[indexOfMultiPay] = double.parse(value);
-                                                                            double
-                                                                                sum =
-                                                                                totalAmount.fold(0, (previous, current) => previous + current);
-                                                                            balance.value =
-                                                                                sum - snapshot.getTotal;
-                                                                            snapshot.setCashAndBalance(
-                                                                                cash: sum,
-                                                                                balance: balance.value);
-
-                                                                          });
-                                                                          snapshot.setPaymentType(
-                                                                            type: PaymentType.MULTI,
-                                                                            cashPrice: selectedPaymentType.value[indexOfMultiPay] == "Cash" ? multiPayCashController.value[indexOfMultiPay].text:null,
-                                                                            cardPrice : selectedPaymentType.value[indexOfMultiPay] == "Card" ? multiPayCashController.value[indexOfMultiPay].text:null,
-                                                                            creditPrice  : selectedPaymentType.value[indexOfMultiPay] == "Credit" ? multiPayCashController.value[indexOfMultiPay].text:null, clean: false,
-                                                                          );
-                                                                        } else {
-                                                                          showSnackBar(
-                                                                              context: context,
-                                                                              text: "Please enter a value");
-                                                                        }
-                                                                      },
-                                                                      inputType:
-                                                                          TextInputType
-                                                                              .number,
+                                                                            snapshot.setPaymentType(
+                                                                              type: PaymentType.MULTI,
+                                                                              cashPrice: selectedPaymentType.value[indexOfMultiPay] == "Cash" ? multiPayCashController.value[indexOfMultiPay].text:null,
+                                                                              cardPrice : selectedPaymentType.value[indexOfMultiPay] == "Card" ? multiPayCashController.value[indexOfMultiPay].text:null,
+                                                                              creditPrice  : selectedPaymentType.value[indexOfMultiPay] == "Credit" ? multiPayCashController.value[indexOfMultiPay].text:null, clean: false,
+                                                                            );
+                                                                          } else {
+                                                                            showSnackBar(
+                                                                                context: context,
+                                                                                text: "Please enter a value");
+                                                                          }
+                                                                        },
+                                                                        inputType:
+                                                                            TextInputType
+                                                                                .number,
+                                                                      ),
                                                                     ),
-                                                                  ),
-                                                                  kSizedW2,
-                                                                  Expanded(
+                                                                    kSizedW2,
+                                                                    Expanded(
+                                                                        child:
+                                                                            Container(
+                                                                      padding: const EdgeInsets
+                                                                              .symmetric(
+                                                                          horizontal:
+                                                                              AppPadding
+                                                                                  .p12,
+                                                                          vertical:
+                                                                              AppPadding.p14),
+                                                                      decoration: BoxDecoration(
+                                                                          borderRadius:
+                                                                              BorderRadius.all(Radius.circular(
+                                                                                  8.0)),
+                                                                          border: Border.all(
+                                                                              color: ColorManager
+                                                                                  .primaryLight),
+                                                                          color: ColorManager
+                                                                              .white),
                                                                       child:
-                                                                          Container(
-                                                                    padding: const EdgeInsets
-                                                                            .symmetric(
-                                                                        horizontal:
-                                                                            AppPadding
-                                                                                .p12,
-                                                                        vertical:
-                                                                            AppPadding.p14),
-                                                                    decoration: BoxDecoration(
-                                                                        borderRadius:
-                                                                            BorderRadius.all(Radius.circular(
-                                                                                8.0)),
-                                                                        border: Border.all(
-                                                                            color: ColorManager
-                                                                                .primaryLight),
-                                                                        color: ColorManager
-                                                                            .white),
-                                                                    child:
-                                                                        DropdownButtonHideUnderline(
-                                                                      child: DropdownButton<
-                                                                          String>(
-                                                                        hint:
-                                                                            Text(
-                                                                          "Select Type",
-                                                                          overflow:
-                                                                              TextOverflow.ellipsis,
+                                                                          DropdownButtonHideUnderline(
+                                                                        child: DropdownButton<
+                                                                            String>(
+                                                                          hint:
+                                                                              Text(
+                                                                            "Select Type",
+                                                                            overflow:
+                                                                                TextOverflow.ellipsis,
+                                                                            style:
+                                                                                getBoldStyle(
+                                                                              color:
+                                                                                  ColorManager.primaryLight,
+                                                                              fontSize:
+                                                                                  FontSize.s13,
+                                                                            ),
+                                                                          ),
+                                                                          icon:
+                                                                              Icon(
+                                                                            Icons
+                                                                                .arrow_drop_down_circle_outlined,
+                                                                            color:
+                                                                                ColorManager.primaryLight,
+                                                                          ),
+                                                                          iconSize:
+                                                                              FontSize.s22,
                                                                           style:
                                                                               getBoldStyle(
                                                                             color:
-                                                                                ColorManager.primaryLight,
+                                                                                ColorManager.black,
                                                                             fontSize:
-                                                                                FontSize.s13,
+                                                                                FontSize.s16,
                                                                           ),
-                                                                        ),
-                                                                        icon:
-                                                                            Icon(
-                                                                          Icons
-                                                                              .arrow_drop_down_circle_outlined,
-                                                                          color:
-                                                                              ColorManager.primaryLight,
-                                                                        ),
-                                                                        iconSize:
-                                                                            FontSize.s22,
-                                                                        style:
-                                                                            getBoldStyle(
-                                                                          color:
-                                                                              ColorManager.black,
-                                                                          fontSize:
-                                                                              FontSize.s16,
-                                                                        ),
-                                                                        borderRadius:
-                                                                            BorderRadius.circular(22),
-                                                                        isDense:
-                                                                            true,
-                                                                        isExpanded:
-                                                                            true,
-                                                                        value: selectedPaymentType
-                                                                            .value[indexOfMultiPay],
-                                                                        onChanged:
-                                                                            (String?
-                                                                                newValue) {
-                                                                          stateSetterSetModalState(
-                                                                              () {
-                                                                            if (!(selectedPaymentType.value.contains(newValue))) {
-                                                                              selectedPaymentType.value[indexOfMultiPay] = newValue ?? "Cash";
-                                                                            }
-                                                                          });
-                                                                        },
-                                                                        items: paymentTypes
-                                                                            .value
-                                                                            .map<DropdownMenuItem<String>>((String
-                                                                                provider) {
-                                                                          return DropdownMenuItem<
-                                                                              String>(
-                                                                            value:
+                                                                          borderRadius:
+                                                                              BorderRadius.circular(22),
+                                                                          isDense:
+                                                                              true,
+                                                                          isExpanded:
+                                                                              true,
+                                                                          value: selectedPaymentType
+                                                                              .value[indexOfMultiPay],
+                                                                          onChanged:
+                                                                              (String?
+                                                                                  newValue) {
+                                                                            stateSetterSetModalState(
+                                                                                () {
+                                                                              if (!(selectedPaymentType.value.contains(newValue))) {
+                                                                                selectedPaymentType.value[indexOfMultiPay] = newValue ?? "Cash";
+                                                                              }
+                                                                            });
+                                                                          },
+                                                                          items: paymentTypes
+                                                                              .value
+                                                                              .map<DropdownMenuItem<String>>((String
+                                                                                  provider) {
+                                                                            return DropdownMenuItem<
+                                                                                String>(
+                                                                              value:
+                                                                                  provider,
+                                                                              onTap:
+                                                                                  () async {},
+                                                                              child:
+                                                                                  Text(
                                                                                 provider,
-                                                                            onTap:
-                                                                                () async {},
-                                                                            child:
-                                                                                Text(
-                                                                              provider,
-                                                                              style: getSemiBoldStyle(
-                                                                                color: ColorManager.primaryLight,
-                                                                                fontSize: FontSize.s14,
+                                                                                style: getSemiBoldStyle(
+                                                                                  color: ColorManager.primaryLight,
+                                                                                  fontSize: FontSize.s14,
+                                                                                ),
                                                                               ),
-                                                                            ),
-                                                                          );
-                                                                        }).toList(),
+                                                                            );
+                                                                          }).toList(),
+                                                                        ),
                                                                       ),
-                                                                    ),
-                                                                  )),
-                                                                ],
-                                                              ),
-                                                              kSizedBox10,
-                                                            ],
-                                                          );
-                                                        },
-                                                      ),
-                                                      kSizedBox10,
-                                                      ElevatedButton(
-                                                        onPressed:
-                                                            multiPayRows.value <
-                                                                    3
-                                                                ? () {
-                                                                    stateSetterSetModalState(
-                                                                        () {
-                                                                      multiPayRows
-                                                                              .value =
-                                                                          multiPayRows.value +
-                                                                              1;
-                                                                    });
-                                                                  }
-                                                                : null,
-                                                        child: Text(
-                                                          "Add Row",
-                                                          style: getSemiBoldStyle(
-                                                              color:
-                                                                  ColorManager
-                                                                      .white,
-                                                              fontSize:
-                                                                  FontSize.s16),
+                                                                    )),
+                                                                  ],
+                                                                ),
+                                                                kSizedBox10,
+                                                              ],
+                                                            );
+                                                          },
                                                         ),
-                                                      ),
-                                                      kSizedBox20,
-                                                      Text(
-                                                        "Balance: ${balance.value}",
-                                                        style: getBoldStyle(
-                                                            color: ColorManager
-                                                                .black,
-                                                            fontSize:
-                                                                AppSize.s18),
-                                                      ),
-                                                      kSizedBox20,
-                                                      Center(
-                                                        child: SizedBox(
-                                                          width: 50.w,
-                                                          child: CustomButton(
-                                                            onTap: () async {
-                                                              if ((formKey.currentState?.validate() ??false)) {
-                                                                Navigator.pop(context);
-                                                                if (!balance.value.isNegative) {
-
-
-                                                                  await printing();
-                                                                } else {
-                                                                  showDialog(
-                                                                    context: context,
-                                                                    builder: (context) {
-                                                                      return showAwesomeDialogue(
-                                                                          title:
-                                                                              "Warning",
-                                                                          content:
-                                                                              "Paid Amount is less than the payable amount.");
-                                                                    },
-                                                                  );
-                                                                }
-                                                              }
-                                                            },
-                                                            title: "Checkout",
-                                                            width: 35.w,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                      kSizedBox20,
-                                                      Padding(
-                                                        padding: const EdgeInsets.all(12.0),
-                                                        child: Container(
-                                                          // Keyboard is transparent
-                                                          decoration: BoxDecoration(
-                                                              color: ColorManager.primaryLight,
-
-                                                              borderRadius: BorderRadius.circular(12)
-                                                          ),
-                                                          child: VirtualKeyboard(
-                                                            // [0-9] + .
-                                                              type: VirtualKeyboardType.Numeric,
-                                                              textColor: Colors.white,
-                                                              textController: multiPayCashController.value[indexOfMultiPayTouch.value] ?? cashController,
-                                                              // Callback for key press event
-                                                              onKeyPress: (key) {
-                                                                if (multiPayCashController.value[indexOfMultiPayTouch.value].text.isNotEmpty) {
-                                                                  stateSetterSetModalState(
+                                                        kSizedBox10,
+                                                        ElevatedButton(
+                                                          onPressed:
+                                                              multiPayRows.value <
+                                                                      3
+                                                                  ? () {
+                                                                      stateSetterSetModalState(
                                                                           () {
-                                                                        totalAmount.add(0);
-                                                                        totalAmount[indexOfMultiPayTouch.value] = double.parse(multiPayCashController.value[indexOfMultiPayTouch.value].text);
-                                                                        double
-                                                                        sum =
-                                                                        totalAmount.fold(0, (previous, current) => previous + current);
-                                                                        balance.value =
-                                                                            sum - snapshot.getTotal;
-                                                                        snapshot.setCashAndBalance(
-                                                                            cash: sum,
-                                                                            balance: balance.value);
+                                                                        multiPayRows
+                                                                                .value =
+                                                                            multiPayRows.value +
+                                                                                1;
                                                                       });
-                                                                  snapshot.setPaymentType(
-                                                                    type: PaymentType.MULTI,
-                                                                    cashPrice: selectedPaymentType.value[indexOfMultiPayTouch.value] == "Cash" ? multiPayCashController.value[indexOfMultiPayTouch.value].text:null,
-                                                                    cardPrice : selectedPaymentType.value[indexOfMultiPayTouch.value] == "Card" ? multiPayCashController.value[indexOfMultiPayTouch.value].text:null,
-                                                                    creditPrice  : selectedPaymentType.value[indexOfMultiPayTouch.value] == "Credit" ? multiPayCashController.value[indexOfMultiPayTouch.value].text:null, clean: false,
-                                                                  );
-                                                                } else {
-                                                                  showSnackBar(
-                                                                      context:
-                                                                      context,
-                                                                      text:
-                                                                      "Please enter a value");
-                                                                }
-                                                              }),
+                                                                    }
+                                                                  : null,
+                                                          child: Text(
+                                                            "Add Row",
+                                                            style: getSemiBoldStyle(
+                                                                color:
+                                                                    ColorManager
+                                                                        .white,
+                                                                fontSize:
+                                                                    FontSize.s16),
+                                                          ),
                                                         ),
-                                                      ),
+                                                        kSizedBox20,
+                                                        Text(
+                                                          "Balance: ${balance.value}",
+                                                          style: getBoldStyle(
+                                                              color: ColorManager
+                                                                  .black,
+                                                              fontSize:
+                                                                  AppSize.s18),
+                                                        ),
+                                                        kSizedBox20,
+                                                        Center(
+                                                          child: SizedBox(
+                                                            width: 50.w,
+                                                            child: CustomButton(
+                                                              onTap: () async {
+                                                                if ((formKey.currentState?.validate() ??false)) {
+                                                                  Navigator.pop(context);
+                                                                  if (!balance.value.isNegative) {
 
 
-                                                    ],
+                                                                    await printing();
+                                                                  } else {
+                                                                    showDialog(
+                                                                      context: context,
+                                                                      builder: (context) {
+                                                                        return showAwesomeDialogue(
+                                                                            title:
+                                                                                "Warning",
+                                                                            content:
+                                                                                "Paid Amount is less than the payable amount.");
+                                                                      },
+                                                                    );
+                                                                  }
+                                                                }
+                                                              },
+                                                              title: "Checkout",
+                                                              width: 35.w,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        kSizedBox20,
+                                                        Padding(
+                                                          padding: const EdgeInsets.all(12.0),
+                                                          child: Container(
+                                                            // Keyboard is transparent
+                                                            decoration: BoxDecoration(
+                                                                color: ColorManager.primaryLight,
+
+                                                                borderRadius: BorderRadius.circular(12)
+                                                            ),
+                                                            child: VirtualKeyboard(
+                                                              // [0-9] + .
+                                                                type: VirtualKeyboardType.Numeric,
+                                                                textColor: Colors.white,
+                                                                textController: multiPayCashController.value[indexOfMultiPayTouch.value] ?? cashController,
+                                                                // Callback for key press event
+                                                                onKeyPress: (key) {
+                                                                  if (multiPayCashController.value[indexOfMultiPayTouch.value].text.isNotEmpty) {
+                                                                    stateSetterSetModalState(
+                                                                            () {
+                                                                          totalAmount.add(0);
+                                                                          totalAmount[indexOfMultiPayTouch.value] = double.parse(multiPayCashController.value[indexOfMultiPayTouch.value].text);
+                                                                          double
+                                                                          sum =
+                                                                          totalAmount.fold(0, (previous, current) => previous + current);
+                                                                          balance.value =
+                                                                              sum - snapshot.getTotal;
+                                                                          snapshot.setCashAndBalance(
+                                                                              cash: sum,
+                                                                              balance: balance.value);
+                                                                        });
+                                                                    snapshot.setPaymentType(
+                                                                      type: PaymentType.MULTI,
+                                                                      cashPrice: selectedPaymentType.value[indexOfMultiPayTouch.value] == "Cash" ? multiPayCashController.value[indexOfMultiPayTouch.value].text:null,
+                                                                      cardPrice : selectedPaymentType.value[indexOfMultiPayTouch.value] == "Card" ? multiPayCashController.value[indexOfMultiPayTouch.value].text:null,
+                                                                      creditPrice  : selectedPaymentType.value[indexOfMultiPayTouch.value] == "Credit" ? multiPayCashController.value[indexOfMultiPayTouch.value].text:null, clean: false,
+                                                                    );
+                                                                  } else {
+                                                                    showSnackBar(
+                                                                        context:
+                                                                        context,
+                                                                        text:
+                                                                        "Please enter a value");
+                                                                  }
+                                                                }),
+                                                          ),
+                                                        ),
+
+
+                                                      ],
+                                                    ),
                                                   ),
                                                 ),
                                               ),

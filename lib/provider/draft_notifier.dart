@@ -133,5 +133,13 @@ class DraftNotifier extends ChangeNotifier {
 
   }
 
+ Future<void> deleteDraft({required int index,required BuildContext context})async{
+   final dbFuncNotifier = context.read<DataBaseFunctionalities>();
 
+   _draftSales.removeAt(index);
+   await dbFuncNotifier.saveDataBase(dbName: AppStrings.dbPOSDraftInfo, dbData: _draftSales).then((value) async {
+     await setDraftID(context: context);
+   });
+   notifyListeners();
+ }
 }

@@ -418,7 +418,7 @@ CacheService _cashService = CacheService();
                 ),
 
                 pw.BarcodeWidget(
-                    data: generateQRCodeString(sellerName: "test", vatRegNo: "300292909310003", timeStamp: DateTime.now().toString(), invoiceAmount: "299", invoiceVAT: "39"),
+                    data: generateQRCodeString(sellerName: profileNotifier.getProfile?.result?[0].companyNameArabic ?? "", vatRegNo: profileNotifier.getProfile?.result?[0].companyVat ?? "", timeStamp: DateTime.now().toString(), invoiceAmount:productManagementNotifier.getTotal.toStringAsFixed(2), invoiceVAT:productManagementNotifier.getTaxAmount.toStringAsFixed(2)),
                     barcode: pw.Barcode.qrCode(),
                     width: 75,
                     height: 75
@@ -448,38 +448,59 @@ CacheService _cashService = CacheService();
       context.read<PosSaleNotifier>().setPosSaleInvoice(context: context, listProductData: listProductData);
     }
 
-/// printing
-    await Printing.layoutPdf(
-      usePrinterSettings: false,
-      onLayout: (format) async => pdf.save(),
-      format: PdfPageFormat.roll80,
-    ).then((value) async {
-
-      productManagementNotifier.cleanAfterSale();
-
-      if(!isRecentTransaction) {
-
-        await productManagementNotifier.setOrderAndInvoiceID(context: context);
-      }
-
-      _isDone = value;
-      notifyListeners();
-    });
-
-//     final bool printStatus = await Printing.directPrintPdf(
-//         printer: Printer(url: "Microsoft Print to PDF"),
-//         onLayout: (format) async => pdf.save(),
-//         format: PdfPageFormat.roll80);
-//     print("eee $printStatus");
-//     if(printStatus){
+// /// printing
+//     await Printing.layoutPdf(
+//       usePrinterSettings: false,
+//       onLayout: (format) async => pdf.save(),
+//       format: PdfPageFormat.roll80,
+//     ).then((value) async {
+//
 //       productManagementNotifier.cleanAfterSale();
-//       await productManagementNotifier.setOrderAndInvoiceID(context: context);
-//       _isDone = true;
+//
+//       if(!isRecentTransaction) {
+//
+//         await productManagementNotifier.setOrderAndInvoiceID(context: context);
+//       }
+//
+//       _isDone = value;
 //       notifyListeners();
-//     }else{
-//       _isDone = false;
-//      notifyListeners();
-//     }
+//     });
+
+    try{
+      final bool printStatus = await Printing.directPrintPdf(
+          printer: const Printer(url: "MHT-P80A"),
+          onLayout: (format) async => pdf.save(),
+          format: PdfPageFormat.roll80);
+      print("eee $printStatus");
+      if(printStatus){
+        productManagementNotifier.cleanAfterSale();
+        await productManagementNotifier.setOrderAndInvoiceID(context: context);
+        _isDone = true;
+        notifyListeners();
+      }else{
+        productManagementNotifier.cleanAfterSale();
+        await productManagementNotifier.setOrderAndInvoiceID(context: context);
+        _isDone = false;
+        showDialog(
+          context: context,
+          builder: (context) {
+            return showAwesomeDialogue(title: "Warning", content: "Sale successfully captured, but printing issue detected. Please ensure your printer 'MHT-P80A' is connected and functioning correctly.\nContact support if the problem persists.\nThank you for your patience.",);
+          },
+        );
+
+        notifyListeners();
+      }
+    }catch(e){
+      showDialog(
+        context: context,
+        builder: (context) {
+          return showAwesomeDialogue(title: "Error", content: "$e Sale successfully captured, but printing issue detected. Please ensure your printer 'MHT-P80A' is connected and functioning correctly.\nContact support if the problem persists.\nThank you for your patience.",);
+
+        },
+      );
+    }
+
+
   }
   pw.TextStyle testStyle(double size,pw.Font font){
     return pw.TextStyle(

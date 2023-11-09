@@ -8,7 +8,7 @@ class AppStrings {
   static const String displayName = "displayName";
   static const String email = "email";
   static const String userId = "userId";
-  static const String dbName   = "dbHouseCare";
+  static const String dbName   = "dbKenz";
   static const String expiryDate   = "expiryDate";
   // static const String selectLanguage = "Select your preferred language";
 

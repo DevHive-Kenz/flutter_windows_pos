@@ -12,6 +12,7 @@ import '../constants/style_manager.dart';
 import '../constants/values_manger.dart';
 import '../core/notifier/checkinout.dart';
 import '../models/check_in_model/check_in_model.dart';
+import '../screens/login_screen/login_screen.dart';
 import '../screens/widget/rounded_button_widget.dart';
 import 'dataBase_fetch_notifier.dart';
 import 'database_functionalities_notifier.dart';
@@ -75,34 +76,48 @@ class CheckInOutNotifier extends ChangeNotifier{
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
                     color: ColorManager.white,
-
                   ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min ,
                     children: [
                       Text("Welcome to the POS setup. It seems you haven't started your shift yet. It's essential to check in to ensure all sales are recorded correctly during your active hours.",style: getSemiBoldStyle(color: ColorManager.black,fontSize: AppSize.s16),),
                       kSizedBox20,
-                      Align(
-                        child: SizedBox(
-                          width: 50.w,
-                          child: Consumer<CheckOutINIDNotifier>(
-                              builder: (context, snapshot,_) {
-                                return snapshot.getIsLoading ? CircularProgressIndicatorWidget() : CustomButton(onTap: () async {
-                                  await snapshot.checkinOut(type: "checkin", context: context).then((value) {
-                                    if(value == "OK"){
-                                      setCheckIn(checkIN: true, context: context);
-                                      Navigator.pop(context);
-                                    }
-
-                                  });
-
-                                },
-                                  title: "Check in",
-                                  width: 35.w,
-                                );
-                              }
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            width: 50.w,
+                            child:  CustomButton(onTap: () async {
+                              CacheService cacheService = CacheService();
+                              await cacheService.deleteSignUpCache();
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => LoginScreen()));
+                            },
+                              title: "Log out",
+                              width: 35.w,
+                            ),
                           ),
-                        ),
+                            kSizedW7,
+                          SizedBox(
+                            width: 50.w,
+                            child: Consumer<CheckOutINIDNotifier>(
+                                builder: (context, snapshot,_) {
+                                  return snapshot.getIsLoading ? CircularProgressIndicatorWidget() : CustomButton(onTap: () async {
+                                    await snapshot.checkinOut(type: "checkin", context: context).then((value) {
+                                      if(value == "OK"){
+                                        setCheckIn(checkIN: true, context: context);
+                                        Navigator.pop(context);
+                                      }
+
+                                    });
+
+                                  },
+                                    title: "Check in",
+                                    width: 35.w,
+                                  );
+                                }
+                            ),
+                          ),
+                        ],
                       )
                     ],
                   ),
